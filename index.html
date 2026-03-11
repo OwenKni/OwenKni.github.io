@@ -73,7 +73,11 @@
     <div class="login-container">
       <h2>Enter Password</h2>
       <input type="password" id="password" placeholder="Password" />
-      <br />
+      <br>
+      <label> 
+        <input type="checkbox" id="showPassword">Show Password
+      </label>
+      <br>
       <button onclick="checkPassword()">Login</button>
       <p id="error"></p>
     </div>
@@ -81,14 +85,18 @@
     <script>
       function checkPassword() {
         const entered = document.getElementById("password").value;
-        const correct = "JOHNRIELGWAPO"; // your password
+        const correct = "JOHNRIELSOSARAP"; // your password
         if (entered === correct) {
           window.location.href = "main.html"; // redirect to main.html
         } else {
           document.getElementById("error").textContent = "Incorrect password!";
         }
       }
-
+       document.getElementById("showPassword").addEventListener("change",
+        function () {
+          const pwd= document.getElementById("Password");
+          pwd.type = this.checked ? "text" : "password";
+        });
       // Optional: Press Enter to submit
       document
         .getElementById("password")
@@ -100,3 +108,4 @@
     </script>
   </body>
 </html>
+
