@@ -124,6 +124,16 @@
         basket.style.left = x + "px";
       });
 
+      // Touch support
+gameContainer.addEventListener("touchmove", (e) => {
+  e.preventDefault(); // Prevent scrolling
+  const rect = gameContainer.getBoundingClientRect();
+  // Get the first touch point
+  let x = e.touches[0].clientX - rect.left - basket.offsetWidth / 2;
+  x = Math.max(0, Math.min(x, rect.width - basket.offsetWidth));
+  basket.style.left = x + "px";
+});
+
       function createPaper() {
         const paper = document.createElement("div");
         const colors = ["#4caf50", "#f44336"]; // green and red
@@ -174,3 +184,4 @@
     </script>
   </body>
 </html>
+
