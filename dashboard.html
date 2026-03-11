@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartSort Dashboard</title>
+
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Orbitron:wght@600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- PARTICLE BACKGROUND -->
+    <div class="background-animation">
+      <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+      <!-- School Logo -->
+      <img src="/images/cs2.png" alt="School Logo" class="school-logo" />
+
+      <!-- Title -->
+      <h1 class="logo-text">SmartSort</h1>
+      <h1>Dashboard</h1>
+
+      <!-- Icons -->
+      <div class="icon-container">
+        <a href="index.html" class="home-icon">
+          <img src="/images/home2.png" alt="Home Icon" />
+        </a>
+
+        <a href="dashboard.html" class="dashboard-icon">
+          <img src="/images/dashb.png" alt="Dashboard Icon" />
+        </a>
+        <a href="logbook.html" class="logbook-icon"
+          ><img src="/images/logbook.png" alt="Logbook Icon" />
+        </a>
+      </div>
+    </header>
+
+    <!-- DASHBOARD SECTION -->
+    <section class="dashboard-section">
+      <h2>Live Paper Count</h2>
+
+      <div class="dashboard">
+        <!-- GREEN PAPERS -->
+        <div class="counter green-box">
+          <h3 class="green">Green Papers</h3>
+          <p id="green-count">0</p>
+        </div>
+
+        <!-- RED PAPERS -->
+        <div class="counter red-box">
+          <h3 class="red">Red Papers</h3>
+          <p id="red-count">0</p>
+        </div>
+      </div>
+      <a href="logbook.html" class="trackbtn">Track Papers</a>
+    </section>
+
+    <script>
+      const apiKey = "Y9GW02L7BBD18516";
+      const channelId = "3289768";
+
+      async function fetchCounts() {
+        try {
+          const response = await fetch(
+            `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`,
+          );
+
+          const data = await response.json();
+          const feeds = data.feeds;
+
+          let green = 0;
+          let red = 0;
+
+          feeds.forEach((feed) => {
+            // Count both 0 and 1 as GREEN
+            if (feed.field1 == "0" || feed.field1 == "1") green++;
+
+            // Count both 0 and 1 as RED
+            if (feed.field2 == "0" || feed.field2 == "1") red++;
+          });
+
+          document.getElementById("green-count").textContent = green;
+          document.getElementById("red-count").textContent = red;
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      }
+
+      fetchCounts();
+      setInterval(fetchCounts, 5000);
+    </script>
+  </body>
+</html>
