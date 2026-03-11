@@ -41,8 +41,8 @@ body {
 
 .particle {
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   background: rgba(0, 200, 0, 0.6);
   border-radius: 50%;
   animation: moveParticle 15s linear infinite;
@@ -121,6 +121,24 @@ body {
     transform: translate(0px, 0px) scale(1);
     opacity: 1;
   }
+}
+
+GAME STYLES ================= */ #game-container {
+  position: relative;
+  width: 80%;
+  height: 300px;
+  margin: 20px auto;
+  background: #e0ffe0;
+  border-radius: 15px;
+  overflow: hidden;
+}
+#basket {
+  position: absolute;
+  bottom: 10px;
+  width: 80px;
+  height: 30px;
+  background: #064d00;
+  border-radius: 10px;
 }
 
 /* ===== HEADER ===== */
@@ -427,4 +445,54 @@ h3 {
 
 .log-table .red {
   color: #f44336;
+}
+
+/* ===== FLOATING WORDS ===== */
+.floating-words-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.floating-word {
+  position: absolute;
+  font-size: 10px;
+  font-weight: bold;
+  color: #064d00; /* dark green */
+  white-space: nowrap;
+  text-shadow: 0 0 5px #000;
+  transition: transform 10s linear;
+}
+
+/* ===== MINI GAME STYLES ===== */
+#game-section {
+  margin-bottom: 100px;
+  padding: 50px 0;
+  text-align: center;
+}
+
+#game-section h2 {
+  font-size: 1.8em;
+  color: #064d00;
+}
+
+#game-container {
+  position: relative;
+  width: 80%;
+  height: 300px;
+  margin: 20px auto;
+  background: #e0ffe0; /* light green background for papers */
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+#basket {
+  position: absolute;
+  bottom: 10px;
+  width: 80px;
+  height: 30px;
+  background: #064d00; /* dark green basket */
+  border-radius: 10px;
 }
