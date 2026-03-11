@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <style>
+      /* Make the background full-screen and blurry */
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Poppins", sans-serif;
+        position: relative;
+        overflow: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("/images/weeb.png") no-repeat center center;
+        background-size: cover;
+        filter: blur(8px); /* Adjust blur amount here */
+        z-index: -1;
+      }
+
+      .login-container {
+        background: rgba(0, 50, 0, 0.85);
+        padding: 40px;
+        border-radius: 15px;
+        text-align: center;
+        color: white;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+      }
+
+      input[type="password"] {
+        padding: 10px;
+        width: 250px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: none;
+        font-size: 1em;
+      }
+
+      button {
+        padding: 10px 25px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      button:hover {
+        background: #38a169;
+      }
+
+      #error {
+        margin-top: 10px;
+        font-weight: bold;
+        color: #ff4d4d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <h2>Enter Password</h2>
+      <input type="password" id="password" placeholder="Password" />
+      <br />
+      <button onclick="checkPassword()">Login</button>
+      <p id="error"></p>
+    </div>
+
+    <script>
+      function checkPassword() {
+        const entered = document.getElementById("password").value;
+        const correct = "JOHNRIELGWAPO"; // your password
+        if (entered === correct) {
+          window.location.href = "main.html"; // redirect to main.html
+        } else {
+          document.getElementById("error").textContent = "Incorrect password!";
+        }
+      }
+
+      // Optional: Press Enter to submit
+      document
+        .getElementById("password")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            checkPassword();
+          }
+        });
+    </script>
+  </body>
+</html>
