@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartSort System</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Orbitron:wght@600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Background Animation -->
+    <div class="background-animation">
+      <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
+      <div class="floating-words-container"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+      <img src="/images/cs2.png" alt="School Logo" class="school-logo" />
+      <h1 class="logo-text">SmartSort</h1>
+      <h1>Paper Monitoring System</h1>
+
+      <div class="icon-container">
+        <a href="main.html" class="home-icon">
+          <img src="/images/home2.png" alt="Home Icon" />
+        </a>
+        <a href="dashboard.html" class="dashboard-icon">
+          <img src="/images/dashb.png" alt="Dashboard Icon" />
+        </a>
+        <a href="logbook.html" class="logbook-icon">
+          <img src="/images/logbook.png" alt="Logbook" />
+        </a>
+      </div>
+    </header>
+
+    <!-- Home Section -->
+    <section class="home-section">
+      <h2>About SmartSort</h2>
+      <p>
+        SmartSort is an automated paper sorting system designed to help schools
+        efficiently separate and monitor green and red papers.
+      </p>
+      <p>
+        Using sensors and cloud integration, you can monitor paper counts
+        anytime and anywhere.
+      </p>
+
+      <a href="dashboard.html" class="btn">Go to Dashboard</a>
+    </section>
+
+    <!-- Mini Game Section -->
+    <section id="game-section">
+      <h2>Catch the Green Papers! Avoid the Red Papers!</h2>
+      <p>Score: <span id="score">0</span></p>
+      <div id="game-container">
+        <div id="basket"></div>
+      </div>
+    </section>
+
+    <script>
+      // ===== FLOATING WORDS =====
+      const words = [
+        "GABRIELLOVEOHARA",
+        "I LOVE CCCS",
+        "MAAM TELYN BEST TEACHER OF ALL TIME",
+        "SIR CHARLES THE GOAT",
+        "Eli The Ball Seeker",
+      ];
+
+      const container = document.querySelector(".floating-words-container");
+
+      function randomPosition(offset = 200) {
+        return {
+          x: Math.random() * (window.innerWidth - offset),
+          y: 100 + Math.random() * (window.innerHeight - 200),
+        };
+      }
+
+      words.forEach((wordText) => {
+        const word = document.createElement("div");
+        word.className = "floating-word";
+        word.textContent = wordText;
+
+        // initial position
+        let pos = randomPosition();
+        word.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+        word.style.transition = "transform 10s linear"; // smooth movement
+        container.appendChild(word);
+
+        // move immediately
+        function moveWord() {
+          const newPos = randomPosition();
+          word.style.transform = `translate(${newPos.x}px, ${newPos.y}px)`;
+          setTimeout(moveWord, 1000);
+        }
+        requestAnimationFrame(moveWord);
+      });
+
+      // ===== MINI GAME =====
+      const gameContainer = document.getElementById("game-container");
+      const basket = document.getElementById("basket");
+      const scoreDisplay = document.getElementById("score");
+      let score = 0;
+
+      // Move basket with mouse
+      gameContainer.addEventListener("mousemove", (e) => {
+        const rect = gameContainer.getBoundingClientRect();
+        let x = e.clientX - rect.left - basket.offsetWidth / 2;
+        x = Math.max(0, Math.min(x, rect.width - basket.offsetWidth));
+        basket.style.left = x + "px";
+      });
+
+      function createPaper() {
+        const paper = document.createElement("div");
+        const colors = ["#4caf50", "#f44336"]; // green and red
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        paper.style.background = color;
+        paper.style.width = "30px";
+        paper.style.height = "30px";
+        paper.style.position = "absolute";
+        paper.style.top = "0px";
+        paper.style.left =
+          Math.random() * (gameContainer.offsetWidth - 30) + "px";
+        paper.style.borderRadius = "5px";
+        gameContainer.appendChild(paper);
+
+        let posY = 0;
+        const speed = 2 + Math.random() * 2;
+
+        function fall() {
+          posY += speed;
+          paper.style.top = posY + "px";
+
+          const paperRect = paper.getBoundingClientRect();
+          const basketRect = basket.getBoundingClientRect();
+
+          // If paper hits basket
+          if (
+            paperRect.bottom >= basketRect.top &&
+            paperRect.left < basketRect.right &&
+            paperRect.right > basketRect.left
+          ) {
+            if (color === "#4caf50") {
+              score++;
+            } else {
+              score = Math.max(0, score - 1); // deduct for red
+            }
+            scoreDisplay.textContent = score;
+            paper.remove();
+          } else if (posY > gameContainer.offsetHeight) {
+            paper.remove();
+          } else {
+            requestAnimationFrame(fall);
+          }
+        }
+        fall();
+      }
+
+      setInterval(createPaper, 1000);
+    </script>
+  </body>
+</html>
