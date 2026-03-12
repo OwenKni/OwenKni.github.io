@@ -65,61 +65,61 @@
       </div>
 
       <!-- RESET BUTTON -->
-      <button id="resetButton" class="trackbtn" style="margin-top:15px; width: 200px;">Reset Counters</button>
+      <button id="resetButton" class="trackbtn" style="margin-top:15px; width:100%;">Reset Counters</button>
 
       <a href="logbook.html" class="trackbtn" style="margin-top:10px;">Track Papers</a>
     </section>
 
+    <!-- DASHBOARD SCRIPT -->
     <script>
-const apiKey = "Y9GW02L7BBD18516";
-const channelId = "3289768";
+      const apiKey = "Y9GW02L7BBD18516";
+      const channelId = "3289768";
 
-// Dashboard counters
-let dashboardGreen = 0;
-let dashboardRed = 0;
+      // Dashboard counters
+      let dashboardGreen = 0;
+      let dashboardRed = 0;
 
-// Timestamp of last reset
-let resetTime = null;
+      // Track the last ThingSpeak feed processed
+      let lastFeedId = 0;
 
-// Reset button
-document.getElementById("resetButton").addEventListener("click", function() {
-    dashboardGreen = 0;
-    dashboardRed = 0;
-    resetTime = new Date(); // store reset time
-    document.getElementById("green-count").textContent = "0";
-    document.getElementById("red-count").textContent = "0";
-});
+      // Reset button
+      document.getElementById("resetButton").addEventListener("click", function() {
+        dashboardGreen = 0;
+        dashboardRed = 0;
+        lastFeedId = 0; // ignore all previous feeds
+        document.getElementById("green-count").textContent = "0";
+        document.getElementById("red-count").textContent = "0";
+      });
 
-// Fetch ThingSpeak feeds
-async function fetchCounts() {
-    try {
-        const response = await fetch(
-            `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`
-        );
-        const data = await response.json();
-        const feeds = data.feeds;
+      // Fetch only the latest feed from ThingSpeak
+      async function fetchCounts() {
+        try {
+          const response = await fetch(
+            `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=1`
+          );
+          const data = await response.json();
+          const feed = data.feeds[0];
 
-        // Only add feeds after resetTime
-        feeds.forEach(feed => {
-            const feedTime = new Date(feed.created_at);
-            if (resetTime && feedTime <= resetTime) return; // ignore old papers
+          if (!feed) return;
 
+          // Only add if feed is new
+          if (feed.entry_id > lastFeedId) {
             if (feed.field1 == "1") dashboardGreen++;
             if (feed.field2 == "1") dashboardRed++;
-        });
 
-        document.getElementById("green-count").textContent = dashboardGreen;
-        document.getElementById("red-count").textContent = dashboardRed;
+            lastFeedId = feed.entry_id;
 
-    } catch (error) {
-        console.error("Error fetching data:", error);
-    }
-}
+            document.getElementById("green-count").textContent = dashboardGreen;
+            document.getElementById("red-count").textContent = dashboardRed;
+          }
+        } catch (err) {
+          console.error("Error fetching data:", err);
+        }
+      }
 
-fetchCounts();
-setInterval(fetchCounts, 5000);
-</script>
+      // Initial fetch & interval
+      fetchCounts();
+      setInterval(fetchCounts, 2000); // fetch every 2s
+    </script>
   </body>
 </html>
-
-
