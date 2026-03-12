@@ -72,7 +72,7 @@
             const time = new Date(feed.created_at).toLocaleString();
 
             // Check field1 (GREEN)
-            if (feed.field1 == "0" || feed.field1 == "1") {
+            if (feed.field1 == "1") {
               const tr = document.createElement("tr");
               tr.innerHTML = `<td>${time}</td>
                         <td style="color:green; font-weight:bold;">GREEN</td>`;
@@ -80,7 +80,7 @@
             }
 
             // Check field2 (RED)
-            if (feed.field2 == "0" || feed.field2 == "1") {
+            if (feed.field2 == "1") {
               const tr = document.createElement("tr");
               tr.innerHTML = `<td>${time}</td>
                         <td style="color:red; font-weight:bold;">RED</td>`;
@@ -97,3 +97,4 @@
     </script>
   </body>
 </html>
+
