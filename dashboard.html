@@ -1,133 +1,152 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SmartSort Dashboard</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartSort Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
 
-    <link rel="stylesheet" href="styles.css" />
-    <!-- Fonts -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Orbitron:wght@600&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      /* Optional inline style for reset button */
-      #reset-btn {
-        padding: 10px 20px;
-        background-color: #ff4d4d;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        margin-bottom: 20px;
-        transition: background 0.3s;
-      }
-      #reset-btn:hover {
-        background-color: #e60000;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- PARTICLE BACKGROUND -->
-    <div class="background-animation">
-      <div class="particles">
-        <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-        <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-        <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-        <div class="particle"></div>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Orbitron:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    /* Inline quick fixes for icon layout and button */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .icon-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-left: auto;
+    }
+    .icon-container img {
+      width: 40px;
+      height: 40px;
+    }
+    .dashboard-section {
+      margin: 30px;
+    }
+    .dashboard {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .counter {
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      font-family: 'Orbitron', sans-serif;
+      flex: 1;
+    }
+    .green-box { background-color: #d4f4dd; }
+    .red-box { background-color: #f4d4d4; }
+    #reset-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #5555ff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+    #reset-btn:hover { background-color: #3333cc; }
+  </style>
+</head>
+<body>
+  <!-- PARTICLE BACKGROUND -->
+  <div class="background-animation">
+    <div class="particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <img src="/images/cs2.png" alt="School Logo" class="school-logo" />
+    <div>
+      <h1 class="logo-text">SmartSort</h1>
+      <h2>Dashboard</h2>
+    </div>
+
+    <!-- Left-aligned Icons -->
+    <div class="icon-container">
+      <a href="main.html" class="home-icon"><img src="/images/home2.png" alt="Home" /></a>
+      <a href="dashboard.html" class="dashboard-icon"><img src="/images/dashb.png" alt="Dashboard" /></a>
+      <a href="logbook.html" class="logbook-icon"><img src="/images/logbook.png" alt="Logbook" /></a>
+    </div>
+  </header>
+
+  <!-- DASHBOARD SECTION -->
+  <section class="dashboard-section">
+    <h2>Live Paper Count</h2>
+
+    <div class="dashboard">
+      <div class="counter green-box">
+        <h3 class="green">Green Papers</h3>
+        <p id="green-count">0</p>
+      </div>
+      <div class="counter red-box">
+        <h3 class="red">Red Papers</h3>
+        <p id="red-count">0</p>
       </div>
     </div>
 
-    <!-- HEADER -->
-    <header>
-      <!-- School Logo -->
-      <img src="/images/cs2.png" alt="School Logo" class="school-logo" />
-      <h1 class="logo-text">SmartSort</h1>
-      <h1>Dashboard</h1>
+    <!-- RESET BUTTON -->
+    <button id="reset-btn">Reset Counters</button>
 
-      <!-- Icons -->
-      <div class="icon-container">
-        <a href="main.html" class="home-icon">
-          <img src="/images/home2.png" alt="Home Icon" />
-        </a>
-        <a href="dashboard.html" class="dashboard-icon">
-          <img src="/images/dashb.png" alt="Dashboard Icon" />
-        </a>
-        <a href="logbook.html" class="logbook-icon">
-          <img src="/images/logbook.png" alt="Logbook Icon" />
-        </a>
-      </div>
-    </header>
+    <a href="logbook.html" class="trackbtn">Track Papers</a>
+  </section>
 
-    <!-- DASHBOARD SECTION -->
-    <section class="dashboard-section">
-      <h2>Live Paper Count</h2>
+  <script>
+    const apiKey = "Y9GW02L7BBD18516";
+    const channelId = "3289768";
 
-      <!-- RESET BUTTON -->
-      <button id="reset-btn">Reset Counters</button>
+    async function fetchCounts() {
+      try {
+        const response = await fetch(`https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`);
+        const data = await response.json();
+        const feeds = data.feeds;
 
-      <div class="dashboard">
-        <!-- GREEN PAPERS -->
-        <div class="counter green-box">
-          <h3 class="green">Green Papers</h3>
-          <p id="green-count">0</p>
-        </div>
+        let green = 0;
+        let red = 0;
 
-        <!-- RED PAPERS -->
-        <div class="counter red-box">
-          <h3 class="red">Red Papers</h3>
-          <p id="red-count">0</p>
-        </div>
-      </div>
-      <a href="logbook.html" class="trackbtn">Track Papers</a>
-    </section>
+        feeds.forEach(feed => {
+          if(feed.field1 == "1") green++;
+          if(feed.field2 == "1") red++;
+        });
 
-    <script>
-      const apiKey = "Y9GW02L7BBD18516";
-      const channelId = "3289768";
-
-      // Fetch counts from ThingSpeak
-      async function fetchCounts() {
-        try {
-          const response = await fetch(
-            `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`
-          );
-          const data = await response.json();
-          const feeds = data.feeds;
-
-          let green = 0;
-          let red = 0;
-
-          feeds.forEach((feed) => {
-            if (feed.field1 == "1") green++;
-            if (feed.field2 == "1") red++;
-          });
-
-          document.getElementById("green-count").textContent = green;
-          document.getElementById("red-count").textContent = red;
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
+        document.getElementById("green-count").textContent = green;
+        document.getElementById("red-count").textContent = red;
+      } catch(error) {
+        console.error(error);
       }
+    }
 
-      fetchCounts();
-      setInterval(fetchCounts, 5000);
+    fetchCounts();
+    setInterval(fetchCounts, 5000);
 
-      // ==== RESET BUTTON ====
-      document.getElementById("reset-btn").addEventListener("click", async () => {
-        if (confirm("Are you sure you want to reset both counters to 0?")) {
-          try {
-            // Send update to ThingSpeak
-            const res = await fetch(`https://api.thingspeak.com/update?api_key=${apiKey}&field1=0&field2=0`);
-            alert("Counters reset to 0!");
-            fetchCounts(); // refresh dashboard
-          } catch (error) {
-            console.error("Error resetting counters:", error);
-          }
-        }
-      });
-    </script>
-  </body>
+    // RESET BUTTON
+    document.getElementById("reset-btn").addEventListener("click", async () => {
+      if(confirm("Are you sure you want to reset the counters to zero?")) {
+        try {
+          await fetch(`https://api.thingspeak.com/update?api_key=${apiKey}&field1=0&field2=0`);
+          alert("Counters reset to 0!");
+          fetchCounts(); // Refresh immediately
+        } catch(e) { console.error(e); }
+      }
+    });
+  </script>
+</body>
 </html>
