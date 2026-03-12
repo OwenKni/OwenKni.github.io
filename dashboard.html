@@ -92,10 +92,10 @@
 
           feeds.forEach((feed) => {
             // Count both 0 and 1 as GREEN
-            if (feed.field1 == "0" || feed.field1 == "1") green++;
+            if (feed.field1 == "1") green++;
 
             // Count both 0 and 1 as RED
-            if (feed.field2 == "0" || feed.field2 == "1") red++;
+            if (feed.field2 == "1") red++;
           });
 
           document.getElementById("green-count").textContent = green;
@@ -110,4 +110,5 @@
     </script>
   </body>
 </html>
+
 
