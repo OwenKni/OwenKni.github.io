@@ -1,60 +1,74 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SmartSort Dashboard</title>
-<link rel="stylesheet" href="styles.css" />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Orbitron:wght@600&display=swap" rel="stylesheet" />
-</head>
-<body>
-<header>
-  <img src="/images/cs2.png" class="school-logo" />
-  <h1 class="logo-text">SmartSort</h1>
-  <h1>Dashboard</h1>
-  <div class="icon-container">
-    <a href="main.html"><img src="/images/home2.png" /></a>
-    <a href="dashboard.html"><img src="/images/dashb.png" /></a>
-    <a href="logbook.html"><img src="/images/logbook.png" /></a>
-  </div>
-</header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartSort Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
 
-<section class="dashboard-section">
-  <h2>Live Paper Count</h2>
-  <div class="dashboard">
-    <div class="counter green-box">
-      <h3 class="green">Green Papers</h3>
-      <p id="green-count">0</p>
-    </div>
-    <div class="counter red-box">
-      <h3 class="red">Red Papers</h3>
-      <p id="red-count">0</p>
-    </div>
-  </div>
-  <a href="logbook.html" class="trackbtn">Track Papers</a>
-</section>
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Orbitron:wght@600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header>
+      <div class="left-header">
+        <img src="/images/cs2.png" alt="School Logo" class="school-logo" />
+        <h1 class="logo-text">SmartSort</h1>
+      </div>
+      <div class="icon-container">
+        <a href="main.html" class="home-icon"><img src="/images/home2.png" alt="Home"/></a>
+        <a href="dashboard.html" class="dashboard-icon"><img src="/images/dashb.png" alt="Dashboard"/></a>
+        <a href="logbook.html" class="logbook-icon"><img src="/images/logbook.png" alt="Logbook"/></a>
+      </div>
+    </header>
 
-<script>
-const apiKey="Y9GW02L7BBD18516";
-const channelId="3289768";
+    <!-- DASHBOARD SECTION -->
+    <section class="dashboard-section">
+      <h2>Live Paper Count</h2>
+      <div class="dashboard">
+        <div class="counter green-box">
+          <h3 class="green">Green Papers</h3>
+          <p id="green-count">0</p>
+        </div>
+        <div class="counter red-box">
+          <h3 class="red">Red Papers</h3>
+          <p id="red-count">0</p>
+        </div>
+      </div>
+      <a href="logbook.html" class="trackbtn">Track Papers</a>
+    </section>
 
-async function fetchCounts(){
-  try{
-    const res = await fetch(`https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`);
-    const data = await res.json();
-    let green=0, red=0;
-    data.feeds.forEach(f=>{
-      if(f.field1=="1") green++;
-      if(f.field2=="1") red++;
-    });
-    document.getElementById("green-count").textContent=green;
-    document.getElementById("red-count").textContent=red;
-  }catch(e){
-    console.error(e);
-  }
-}
-fetchCounts();
-setInterval(fetchCounts,5000);
-</script>
-</body>
+    <script>
+      const apiKey = "Y9GW02L7BBD18516";
+      const channelId = "3289768";
+
+      async function fetchCounts() {
+        try {
+          const res = await fetch(`https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`);
+          const data = await res.json();
+          const feeds = data.feeds;
+
+          let green = 0;
+          let red = 0;
+
+          feeds.forEach(feed => {
+            if(feed.field1 == "1") green++;
+            if(feed.field2 == "1") red++;
+          });
+
+          document.getElementById("green-count").textContent = green;
+          document.getElementById("red-count").textContent = red;
+        } catch (err) {
+          console.error("Error fetching counts:", err);
+        }
+      }
+
+      fetchCounts();
+      setInterval(fetchCounts, 5000);
+    </script>
+  </body>
 </html>
