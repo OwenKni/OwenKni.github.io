@@ -1,74 +1,98 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SmartSort Logbook</title>
-<link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-<header>
-  <img src="/images/cs2.png" class="school-logo" />
-  <h1 class="logo-text">SmartSort</h1>
-  <h1>Logbook</h1>
-  <div class="icon-container">
-    <a href="main.html" class="home-icon"><img src="/images/home2.png" /></a>
-    <a href="dashboard.html" class="dashboard-icon"><img src="/images/dashb.png" /></a>
-    <a href="logbook.html" class="logbook-icon"><img src="/images/logbook.png" /></a>
-  </div>
-</header>
-
-<section class="dashboard-section">
-  <h2>Paper Drop History</h2>
-  <button id="reset-btn" style="margin-bottom:10px;">Reset Counters</button>
-  <table class="log-table">
-    <thead>
-      <tr>
-        <th>Time</th>
-        <th>Paper Type</th>
-      </tr>
-    </thead>
-    <tbody id="log-body"></tbody>
-  </table>
-</section>
-
-<script>
-const apiKey="Y9GW02L7BBD18516";
-const channelId="3289768";
-
-async function loadLogbook(){
-  try{
-    const res = await fetch(`https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`);
-    const data = await res.json();
-    const logBody = document.getElementById("log-body");
-    logBody.innerHTML="";
-    data.feeds.reverse().forEach(feed=>{
-      const time = new Date(feed.created_at).toLocaleString();
-      if(feed.field1=="1"){
-        logBody.innerHTML += `<tr><td>${time}</td><td style="color:green;font-weight:bold;">GREEN</td></tr>`;
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SmartSort Logbook</title>
+    <link rel="stylesheet" href="styles.css"/>
+    <style>
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
       }
-      if(feed.field2=="1"){
-        logBody.innerHTML += `<tr><td>${time}</td><td style="color:red;font-weight:bold;">RED</td></tr>`;
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
       }
-    });
-  }catch(e){console.error(e);}
-}
+      .header-left img.school-logo {
+        width: 50px;
+        height: 50px;
+      }
+      .header-left h1 {
+        margin: 0;
+        font-size: 22px;
+      }
+      .icon-container {
+        display: flex;
+        gap: 10px;
+      }
+      .icon-container img {
+        width: 35px;
+        height: 35px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <img src="/images/cs2.png" alt="School Logo" class="school-logo"/>
+        <h1>SmartSort Logbook</h1>
+      </div>
+      <div class="icon-container">
+        <a href="main.html"><img src="/images/home2.png" alt="Home"/></a>
+        <a href="dashboard.html"><img src="/images/dashb.png" alt="Dashboard"/></a>
+        <a href="logbook.html"><img src="/images/logbook.png" alt="Logbook"/></a>
+      </div>
+    </header>
 
-loadLogbook();
-setInterval(loadLogbook,5000);
+    <section class="dashboard-section">
+      <h2>Paper Drop History</h2>
+      <button id="reset-btn" style="margin-bottom:10px;">Reset Counters</button>
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Paper Type</th>
+          </tr>
+        </thead>
+        <tbody id="log-body"></tbody>
+      </table>
+    </section>
 
-// ==== RESET BUTTON ====
-document.getElementById("reset-btn").addEventListener("click", async ()=>{
-  if(confirm("Are you sure you want to reset counters?")){
-    try{
-      // Reset both field1 and field2 to 0
-      await fetch(`https://api.thingspeak.com/update?api_key=${apiKey}&field1=0&field2=0`);
-      alert("Counters reset to 0!");
-      loadLogbook(); // refresh log
-    }catch(e){console.error(e);}
-  }
-});
-</script>
-</body>
+    <script>
+      const apiKey = "Y9GW02L7BBD18516";
+      const channelId = "3289768";
+
+      async function loadLogbook() {
+        try {
+          const res = await fetch(`https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`);
+          const data = await res.json();
+          const logBody = document.getElementById("log-body");
+          logBody.innerHTML = "";
+          data.feeds.reverse().forEach(feed => {
+            const time = new Date(feed.created_at).toLocaleString();
+            if(feed.field1=="1") logBody.innerHTML += `<tr><td>${time}</td><td style="color:green;font-weight:bold;">GREEN</td></tr>`;
+            if(feed.field2=="1") logBody.innerHTML += `<tr><td>${time}</td><td style="color:red;font-weight:bold;">RED</td></tr>`;
+          });
+        } catch(e){ console.error(e); }
+      }
+
+      loadLogbook();
+      setInterval(loadLogbook, 5000);
+
+      // RESET BUTTON
+      document.getElementById("reset-btn").addEventListener("click", async ()=>{
+        if(confirm("Are you sure you want to reset counters?")){
+          try{
+            await fetch(`https://api.thingspeak.com/update?api_key=${apiKey}&field1=0&field2=0`);
+            alert("Counters reset to 0!");
+            loadLogbook();
+          }catch(e){console.error(e);}
+        }
+      });
+    </script>
+  </body>
 </html>
-
