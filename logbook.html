@@ -60,7 +60,7 @@
       async function loadLogbook() {
         try {
           const response = await fetch(
-            `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`
+            `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`,
           );
           const data = await response.json();
           const feeds = data.feeds.reverse();
@@ -71,6 +71,7 @@
           feeds.forEach((feed) => {
             const time = new Date(feed.created_at).toLocaleString();
 
+            // Check field1 (GREEN)
             if (feed.field1 == "0" || feed.field1 == "1") {
               const tr = document.createElement("tr");
               tr.innerHTML = `<td>${time}</td>
@@ -78,6 +79,7 @@
               logBody.appendChild(tr);
             }
 
+            // Check field2 (RED)
             if (feed.field2 == "0" || feed.field2 == "1") {
               const tr = document.createElement("tr");
               tr.innerHTML = `<td>${time}</td>
