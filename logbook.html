@@ -8,6 +8,7 @@
   </head>
 
   <body>
+    <!-- Background particles -->
     <div class="background-animation">
       <div class="particles">
         <div class="particle"></div>
@@ -22,6 +23,8 @@
         <div class="particle"></div>
       </div>
     </div>
+
+    <!-- Header -->
     <header>
       <img src="/images/cs2.png" alt="School Logo" class="school-logo" />
       <h1 class="logo-text">SmartSort</h1>
@@ -40,8 +43,18 @@
       </div>
     </header>
 
+    <!-- Logbook section -->
     <section class="dashboard-section">
       <h2>Paper Drop History</h2>
+
+      <!-- Search Bar -->
+      <input
+        type="date"
+        id="searchDate"
+        class="trackbtn"
+        style="width: 100%; margin-bottom: 10px; padding: 5px;"
+      />
+
       <table class="log-table">
         <thead>
           <tr>
@@ -53,48 +66,60 @@
       </table>
     </section>
 
+    <!-- Logbook Script -->
     <script>
       const apiKey = "Y9GW02L7BBD18516";
       const channelId = "3289768";
 
+      let allLogs = []; // store all feeds locally
+
       async function loadLogbook() {
         try {
           const response = await fetch(
-            `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`,
+            `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`
           );
           const data = await response.json();
-          const feeds = data.feeds.reverse();
-
-          const logBody = document.getElementById("log-body");
-          logBody.innerHTML = "";
-
-          feeds.forEach((feed) => {
-            const time = new Date(feed.created_at).toLocaleString();
-
-            // Check field1 (GREEN)
-            if (feed.field1 == "1") {
-              const tr = document.createElement("tr");
-              tr.innerHTML = `<td>${time}</td>
-                        <td style="color:green; font-weight:bold;">GREEN</td>`;
-              logBody.appendChild(tr);
-            }
-
-            // Check field2 (RED)
-            if (feed.field2 == "1") {
-              const tr = document.createElement("tr");
-              tr.innerHTML = `<td>${time}</td>
-                        <td style="color:red; font-weight:bold;">RED</td>`;
-              logBody.appendChild(tr);
-            }
-          });
+          allLogs = data.feeds.reverse(); // newest first
+          displayLogs();
         } catch (error) {
           console.error("Error loading logbook:", error);
         }
       }
 
+      // Display logs (filtered by search if any)
+      function displayLogs() {
+        const logBody = document.getElementById("log-body");
+        const searchDate = document.getElementById("searchDate").value;
+        logBody.innerHTML = "";
+
+        allLogs.forEach(feed => {
+          const feedTime = new Date(feed.created_at);
+          const feedDateStr = feedTime.toISOString().split("T")[0]; // YYYY-MM-DD
+
+          if (searchDate && feedDateStr !== searchDate) return; // filter by date
+
+          if (feed.field1 == "1") {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${feedTime.toLocaleString()}</td>
+                            <td style="color:green; font-weight:bold;">GREEN</td>`;
+            logBody.appendChild(tr);
+          }
+
+          if (feed.field2 == "1") {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${feedTime.toLocaleString()}</td>
+                            <td style="color:red; font-weight:bold;">RED</td>`;
+            logBody.appendChild(tr);
+          }
+        });
+      }
+
+      // Event listener for date search
+      document.getElementById("searchDate").addEventListener("change", displayLogs);
+
+      // Initial load & refresh every 5s
       loadLogbook();
       setInterval(loadLogbook, 5000);
     </script>
   </body>
 </html>
-
