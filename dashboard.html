@@ -64,9 +64,6 @@
         </div>
       </div>
 
-      <!-- RESET BUTTON -->
-      <button id="resetButton" class="trackbtn" style="margin-top:15px; width:100%;">Reset Counters</button>
-
       <a href="logbook.html" class="trackbtn" style="margin-top:10px;">Track Papers</a>
     </section>
 
@@ -75,23 +72,10 @@
       const apiKey = "Y9GW02L7BBD18516";
       const channelId = "3289768";
 
-      // Dashboard counters
       let dashboardGreen = 0;
       let dashboardRed = 0;
-
-      // Track the last ThingSpeak feed processed
       let lastFeedId = 0;
 
-      // Reset button
-      document.getElementById("resetButton").addEventListener("click", function() {
-        dashboardGreen = 0;
-        dashboardRed = 0;
-        lastFeedId = 0; // ignore all previous feeds
-        document.getElementById("green-count").textContent = "0";
-        document.getElementById("red-count").textContent = "0";
-      });
-
-      // Fetch only the latest feed from ThingSpeak
       async function fetchCounts() {
         try {
           const response = await fetch(
@@ -102,7 +86,6 @@
 
           if (!feed) return;
 
-          // Only add if feed is new
           if (feed.entry_id > lastFeedId) {
             if (feed.field1 == "1") dashboardGreen++;
             if (feed.field2 == "1") dashboardRed++;
@@ -117,9 +100,8 @@
         }
       }
 
-      // Initial fetch & interval
       fetchCounts();
-      setInterval(fetchCounts, 2000); // fetch every 2s
+      setInterval(fetchCounts, 2000);
     </script>
   </body>
 </html>
