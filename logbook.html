@@ -52,7 +52,7 @@
         type="date"
         id="searchDate"
         class="trackbtn"
-        style="width: 300px; margin-bottom: 40px; padding: 5px;"
+        style="width: 100%; margin-bottom: 10px; padding: 5px;"
       />
 
       <table class="log-table">
@@ -94,10 +94,12 @@
 
         allLogs.forEach(feed => {
           const feedTime = new Date(feed.created_at);
-          const feedDateStr = feedTime.toISOString().split("T")[0]; // YYYY-MM-DD
+          const feedDateStr = feedTime.toLocaleDateString('en-CA'); // local YYYY-MM-DD
 
-          if (searchDate && feedDateStr !== searchDate) return; // filter by date
+          // Filter by search date
+          if (searchDate && feedDateStr !== searchDate) return;
 
+          // GREEN papers
           if (feed.field1 == "1") {
             const tr = document.createElement("tr");
             tr.innerHTML = `<td>${feedTime.toLocaleString()}</td>
@@ -105,6 +107,7 @@
             logBody.appendChild(tr);
           }
 
+          // RED papers
           if (feed.field2 == "1") {
             const tr = document.createElement("tr");
             tr.innerHTML = `<td>${feedTime.toLocaleString()}</td>
@@ -123,4 +126,3 @@
     </script>
   </body>
 </html>
-
