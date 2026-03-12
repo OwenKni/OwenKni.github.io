@@ -75,40 +75,34 @@
     </section>
 
     <script>
-      const apiKey = "Y9GW02L7BBD18516";
-      const channelId = "3289768";
+const apiKey = "Y9GW02L7BBD18516";
+const channelId = "3289768";
 
-      async function fetchCounts() {
-        try {
-          const response = await fetch(
-            `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`,
-          );
+async function fetchCounts() {
+  try {
+    const response = await fetch(
+      `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=1`
+    );
 
-          const data = await response.json();
-          const feeds = data.feeds;
+    const data = await response.json();
+    const latest = data.feeds[0];
 
-          let green = 0;
-          let red = 0;
+    const green = latest.field1 || 0;
+    const red = latest.field2 || 0;
 
-          feeds.forEach((feed) => {
-            // Count both 0 and 1 as GREEN
-            if (feed.field1 == "1") green++;
+    document.getElementById("green-count").textContent = green;
+    document.getElementById("red-count").textContent = red;
 
-            // Count both 0 and 1 as RED
-            if (feed.field2 == "1") red++;
-          });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+}
 
-          document.getElementById("green-count").textContent = green;
-          document.getElementById("red-count").textContent = red;
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      }
-
-      fetchCounts();
-      setInterval(fetchCounts, 5000);
-    </script>
+fetchCounts();
+setInterval(fetchCounts, 5000);
+</script>
   </body>
 </html>
+
 
 
