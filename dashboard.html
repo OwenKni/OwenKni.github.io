@@ -5,28 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SmartSort Dashboard</title>
     <link rel="stylesheet" href="styles.css" />
-
-    <!-- Fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Orbitron:wght@600&display=swap"
       rel="stylesheet"
     />
+    <style>
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .header-left img.school-logo {
+        width: 50px;
+        height: 50px;
+      }
+      .header-left h1 {
+        margin: 0;
+        font-size: 22px;
+      }
+      .icon-container {
+        display: flex;
+        gap: 10px;
+      }
+      .icon-container img {
+        width: 35px;
+        height: 35px;
+      }
+    </style>
   </head>
   <body>
-    <!-- HEADER -->
     <header>
-      <div class="left-header">
-        <img src="/images/cs2.png" alt="School Logo" class="school-logo" />
-        <h1 class="logo-text">SmartSort</h1>
+      <div class="header-left">
+        <img src="/images/cs2.png" alt="School Logo" class="school-logo"/>
+        <h1>SmartSort Dashboard</h1>
       </div>
       <div class="icon-container">
-        <a href="main.html" class="home-icon"><img src="/images/home2.png" alt="Home"/></a>
-        <a href="dashboard.html" class="dashboard-icon"><img src="/images/dashb.png" alt="Dashboard"/></a>
-        <a href="logbook.html" class="logbook-icon"><img src="/images/logbook.png" alt="Logbook"/></a>
+        <a href="main.html"><img src="/images/home2.png" alt="Home"/></a>
+        <a href="dashboard.html"><img src="/images/dashb.png" alt="Dashboard"/></a>
+        <a href="logbook.html"><img src="/images/logbook.png" alt="Logbook"/></a>
       </div>
     </header>
 
-    <!-- DASHBOARD SECTION -->
     <section class="dashboard-section">
       <h2>Live Paper Count</h2>
       <div class="dashboard">
@@ -56,15 +81,13 @@
           let red = 0;
 
           feeds.forEach(feed => {
-            if(feed.field1 == "1") green++;
-            if(feed.field2 == "1") red++;
+            if(feed.field1=="1") green++;
+            if(feed.field2=="1") red++;
           });
 
           document.getElementById("green-count").textContent = green;
           document.getElementById("red-count").textContent = red;
-        } catch (err) {
-          console.error("Error fetching counts:", err);
-        }
+        } catch(err) { console.error(err); }
       }
 
       fetchCounts();
