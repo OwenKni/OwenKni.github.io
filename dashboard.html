@@ -70,27 +70,27 @@
       <a href="logbook.html" class="trackbtn" style="margin-top:10px;">Track Papers</a>
     </section>
 
-    <!-- DASHBOARD SCRIPT -->
     <script>
 const apiKey = "Y9GW02L7BBD18516";
 const channelId = "3289768";
 
-// Track dashboard totals separately from ThingSpeak
+// Dashboard counters
 let dashboardGreen = 0;
-let dashboardRed   = 0;
+let dashboardRed = 0;
 
-// Track the last number of entries we processed
-let lastFeedIndex = 0;
+// Timestamp of last reset
+let resetTime = null;
 
 // Reset button
 document.getElementById("resetButton").addEventListener("click", function() {
     dashboardGreen = 0;
-    dashboardRed   = 0;
-    lastFeedIndex  = 0; // ignore old ThingSpeak data
+    dashboardRed = 0;
+    resetTime = new Date(); // store reset time
     document.getElementById("green-count").textContent = "0";
     document.getElementById("red-count").textContent = "0";
 });
 
+// Fetch ThingSpeak feeds
 async function fetchCounts() {
     try {
         const response = await fetch(
@@ -99,14 +99,14 @@ async function fetchCounts() {
         const data = await response.json();
         const feeds = data.feeds;
 
-        // Only process new entries since last fetch
-        for (let i = lastFeedIndex; i < feeds.length; i++) {
-            const feed = feeds[i];
+        // Only add feeds after resetTime
+        feeds.forEach(feed => {
+            const feedTime = new Date(feed.created_at);
+            if (resetTime && feedTime <= resetTime) return; // ignore old papers
+
             if (feed.field1 == "1") dashboardGreen++;
             if (feed.field2 == "1") dashboardRed++;
-        }
-
-        lastFeedIndex = feeds.length; // update last processed feed
+        });
 
         document.getElementById("green-count").textContent = dashboardGreen;
         document.getElementById("red-count").textContent = dashboardRed;
@@ -121,4 +121,5 @@ setInterval(fetchCounts, 5000);
 </script>
   </body>
 </html>
+
 
