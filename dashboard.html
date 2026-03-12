@@ -65,21 +65,37 @@
       </div>
 
       <!-- RESET BUTTON -->
-      <button id="resetButton" class="trackbtn" style="margin-top:15px; width:50%;">Reset Counters</button>
+      <button id="resetButton" class="trackbtn" style="margin-top:15px; width: 100px;">Reset Counters</button>
 
       <a href="logbook.html" class="trackbtn" style="margin-top:10px;">Track Papers</a>
     </section>
 
+    <!-- DASHBOARD SCRIPT -->
     <script>
       const apiKey = "Y9GW02L7BBD18516";
       const channelId = "3289768";
 
+      // ===== Offsets for reset =====
+      let greenOffset = 0;
+      let redOffset = 0;
+
+      // ===== Reset Button =====
+      document.getElementById("resetButton").addEventListener("click", function() {
+        // Store current totals as offsets
+        greenOffset = parseInt(document.getElementById("green-count").textContent);
+        redOffset   = parseInt(document.getElementById("red-count").textContent);
+
+        // Immediately show 0 on dashboard
+        document.getElementById("green-count").textContent = "0";
+        document.getElementById("red-count").textContent = "0";
+      });
+
+      // ===== Fetch counts from ThingSpeak =====
       async function fetchCounts() {
         try {
           const response = await fetch(
             `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`
           );
-
           const data = await response.json();
           const feeds = data.feeds;
 
@@ -91,24 +107,18 @@
             if (feed.field2 == "1") red++;
           });
 
-          document.getElementById("green-count").textContent = green;
-          document.getElementById("red-count").textContent = red;
+          // Apply offsets for dashboard display
+          document.getElementById("green-count").textContent = green - greenOffset;
+          document.getElementById("red-count").textContent = red - redOffset;
+
         } catch (error) {
           console.error("Error fetching data:", error);
         }
       }
 
+      // ===== Initial fetch & interval =====
       fetchCounts();
       setInterval(fetchCounts, 5000);
-
-      // RESET BUTTON
-      document.getElementById("resetButton").addEventListener("click", function() {
-        document.getElementById("green-count").textContent = "0";
-        document.getElementById("red-count").textContent = "0";
-        // Optional: reset ThingSpeak counters
-        // fetch(`https://api.thingspeak.com/update?api_key=YOUR_WRITE_KEY&field1=0&field2=0`);
-      });
     </script>
   </body>
 </html>
-
