@@ -68,40 +68,38 @@
     </section>
 
     <!-- DASHBOARD SCRIPT -->
-    <script>
-      const apiKey = "Y9GW02L7BBD18516";
-      const channelId = "3289768";
+   <script>
+const apiKey = "Y9GW02L7BBD18516";
+const channelId = "3289768";
 
-      let dashboardGreen = 0;
-      let dashboardRed = 0;
-      let lastFeedId = 0;
+async function fetchCounts() {
+  try {
+    const response = await fetch(
+      `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=100`
+    );
+    const data = await response.json();
+    const feeds = data.feeds;
 
-      async function fetchCounts() {
-        try {
-          const response = await fetch(
-            `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${apiKey}&results=1`
-          );
-          const data = await response.json();
-          const feed = data.feeds[0];
+    // Count total number of papers in ThingSpeak
+    let totalGreen = 0;
+    let totalRed = 0;
 
-          if (!feed) return;
+    feeds.forEach(feed => {
+      if (feed.field1 == "1") totalGreen++;
+      if (feed.field2 == "1") totalRed++;
+    });
 
-          if (feed.entry_id > lastFeedId) {
-            if (feed.field1 == "1") dashboardGreen++;
-            if (feed.field2 == "1") dashboardRed++;
+    document.getElementById("green-count").textContent = totalGreen;
+    document.getElementById("red-count").textContent = totalRed;
+  } catch (err) {
+    console.error("Error fetching data:", err);
+  }
+}
 
-            lastFeedId = feed.entry_id;
-
-            document.getElementById("green-count").textContent = dashboardGreen;
-            document.getElementById("red-count").textContent = dashboardRed;
-          }
-        } catch (err) {
-          console.error("Error fetching data:", err);
-        }
-      }
-
-      fetchCounts();
-      setInterval(fetchCounts, 2000);
-    </script>
+// Initial fetch & update every 5 seconds
+fetchCounts();
+setInterval(fetchCounts, 5000);
+</script>
   </body>
 </html>
+
