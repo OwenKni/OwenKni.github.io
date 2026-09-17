@@ -1,1109 +1,2955 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+/* =========================================================
+   CRYPTO TRADING JOURNAL
+   ========================================================= */
 
 
-body {
+/* ================= DATA ================= */
 
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+let trades =
+    JSON.parse(
+        localStorage.getItem("cryptoTrades")
+    ) || [];
 
-    background: #f4f6f8;
 
-    color: #1f2937;
-}
+let currentCalendarDate =
+    new Date();
 
 
-/* ================= NAVBAR ================= */
+let selectedStrategy =
+    "liquidity";
 
-.navbar {
 
-    background: #111827;
 
-    color: white;
+/* =========================================================
+   STRATEGIES
+   ========================================================= */
 
-    min-height: 65px;
+const strategies = {
 
-    display: flex;
 
-    align-items: center;
+    /* =====================================================
+       STRATEGY 1
+       ===================================================== */
 
-    justify-content: space-between;
+    liquidity: {
 
-    padding: 0 30px;
+        name:
+            "Liquidity Sweep → Reclaim → Continuation",
 
-    position: sticky;
+        description:
+            "This strategy looks for price to sweep an important liquidity level, reclaim that level, and then continue in the opposite direction of the sweep.",
 
-    top: 0;
 
-    z-index: 100;
-}
+        steps: [
 
+            {
+                title:
+                    "Mark Important Liquidity Areas",
 
-.logo {
+                timeframe:
+                    "1H",
 
-    font-size: 20px;
+                text:
+                    "Start on the 1H chart. Identify important areas where price may react or where liquidity may be located.",
 
-    font-weight: bold;
-}
+                bullets: [
 
+                    "Previous swing highs",
 
-.nav-links {
+                    "Previous swing lows",
 
-    display: flex;
+                    "Equal highs",
 
-    gap: 8px;
-}
+                    "Equal lows",
 
+                    "Previous day high",
 
-.nav-links button {
+                    "Previous day low",
 
-    background: transparent;
+                    "Major support and resistance"
 
-    border: none;
+                ],
 
-    color: #d1d5db;
+                tip:
+                    "You are not looking for an entry yet. You are simply identifying important locations on the chart."
+            },
 
-    padding: 10px 14px;
 
-    border-radius: 6px;
+            {
+                title:
+                    "Wait for Price to Approach the Level",
 
-    cursor: pointer;
+                timeframe:
+                    "15M",
 
-    font-size: 14px;
-}
+                text:
+                    "Move to the 15M chart and wait for price to approach one of the important levels you marked.",
 
+                bullets: [
 
-.nav-links button:hover {
+                    "Do not chase price while it is far from the level.",
 
-    background: #374151;
+                    "Do not enter simply because price touches the level.",
 
-    color: white;
-}
+                    "Observe the reaction around the area."
 
+                ],
 
+                tip:
+                    "The level provides the location. The reaction at that level creates the potential setup."
+            },
 
-/* ================= PAGES ================= */
 
-.page {
+            {
+                title:
+                    "Wait for the Liquidity Sweep",
 
-    display: none;
+                timeframe:
+                    "15M",
 
-    max-width: 1200px;
+                text:
+                    "Price should move beyond an important high or low, taking the liquidity around that area.",
 
-    margin: auto;
+                bullets: [
 
-    padding: 35px 20px;
-}
+                    "Bullish setup: price sweeps below an important low.",
 
+                    "Bearish setup: price sweeps above an important high.",
 
-.page.active {
+                    "The sweep itself is not the entry."
 
-    display: block;
-}
+                ],
 
+                tip:
+                    "Do not automatically treat every wick as a valid liquidity sweep. Consider the importance of the level and the reaction afterward."
+            },
 
-.page-header {
 
-    margin-bottom: 25px;
-}
+            {
+                title:
+                    "Wait for the Reclaim",
 
+                timeframe:
+                    "15M",
 
-.page-header h1 {
+                text:
+                    "After the sweep, wait for price to move back through and reclaim the important level.",
 
-    font-size: 30px;
+                bullets: [
 
-    margin-bottom: 8px;
-}
+                    "Bullish: sweep below the level, then reclaim it.",
 
+                    "Bearish: sweep above the level, then reclaim it.",
 
-.page-header p {
+                    "Do not enter immediately after the sweep."
 
-    color: #6b7280;
+                ],
 
-    line-height: 1.6;
-}
+                tip:
+                    "The reclaim is important because you want evidence that price did not successfully hold beyond the swept level."
+            },
 
 
+            {
+                title:
+                    "Wait for Structure Confirmation",
 
-/* ================= CARDS ================= */
+                timeframe:
+                    "5M",
 
-.card {
+                text:
+                    "After the reclaim, move to the 5M chart and look for a structure shift or BOS in the potential trade direction.",
 
-    background: white;
+                bullets: [
 
-    border-radius: 12px;
+                    "Bullish setup → bullish structure.",
 
-    padding: 25px;
+                    "Bearish setup → bearish structure.",
 
-    margin-bottom: 25px;
+                    "Do not force a structure break that is not clearly present."
 
-    border: 1px solid #e5e7eb;
-}
+                ],
 
+                tip:
+                    "The 15M gives you the setup location while the 5M helps provide entry confirmation."
+            },
 
-.card h2 {
 
-    margin-bottom: 20px;
-}
+            {
+                title:
+                    "Wait for the Pullback",
 
+                timeframe:
+                    "5M",
 
+                text:
+                    "After the structure break, wait for price to pull back rather than immediately chasing the move.",
 
-/* ================= DASHBOARD ================= */
+                bullets: [
 
-.stats-grid {
+                    "Broken structure",
 
-    display: grid;
+                    "Reclaimed level",
 
-    grid-template-columns:
-        repeat(4, 1fr);
+                    "Demand or supply",
 
-    gap: 20px;
+                    "Fair Value Gap (FVG)"
 
-    margin-bottom: 25px;
-}
+                ],
 
+                tip:
+                    "The pullback gives you a more controlled location for your entry."
+            },
 
-.stat-card {
 
-    background: white;
+            {
+                title:
+                    "Set the Stop Loss",
 
-    border: 1px solid #e5e7eb;
+                timeframe:
+                    "5M",
 
-    border-radius: 12px;
+                text:
+                    "Place the stop loss beyond the area that would invalidate the setup.",
 
-    padding: 22px;
-}
+                bullets: [
 
+                    "Bullish → potentially beyond the sweep low.",
 
-.stat-card span {
+                    "Bearish → potentially beyond the sweep high.",
 
-    display: block;
+                    "The SL should have a logical invalidation reason."
 
-    color: #6b7280;
+                ],
 
-    font-size: 14px;
+                tip:
+                    "If price moves back through the invalidation area, the original setup is no longer behaving as expected."
+            },
 
-    margin-bottom: 8px;
-}
 
+            {
+                title:
+                    "Set the Take Profit",
 
-.stat-card strong {
+                timeframe:
+                    "15M / 1H",
 
-    font-size: 25px;
-}
+                text:
+                    "Choose a logical target based on the chart.",
 
+                bullets: [
 
+                    "Opposing liquidity",
 
-/* ================= FORM ================= */
+                    "Previous swing",
 
-.form-grid {
+                    "Resistance",
 
-    display: grid;
+                    "Support",
 
-    grid-template-columns:
-        repeat(2, 1fr);
+                    "Another important price level"
 
-    gap: 20px;
-}
+                ],
 
+                tip:
+                    "Your target should be based on available price structure rather than chosen randomly."
+            }
 
-.form-group {
+        ],
 
-    display: flex;
 
-    flex-direction: column;
+        flow:
+            "1H Liquidity → 15M Approach → Sweep → Reclaim → 5M Structure → Pullback → Entry → SL → TP"
 
-    gap: 7px;
-}
+    },
 
 
-.full-width {
 
-    grid-column: 1 / -1;
-}
+    /* =====================================================
+       STRATEGY 2
+       ===================================================== */
 
+    range: {
 
-label {
+        name:
+            "Range → Breakout → Retest",
 
-    font-size: 14px;
+        description:
+            "This strategy waits for price to establish a clear range, break out of that range, show acceptance outside it, and then retest the breakout level.",
 
-    font-weight: bold;
-}
 
+        steps: [
 
-input,
-textarea {
+            {
+                title:
+                    "Find a Genuine Range",
 
-    width: 100%;
+                timeframe:
+                    "15M",
 
-    padding: 12px;
+                text:
+                    "Look for an area where price repeatedly reacts between an upper and lower boundary.",
 
-    border: 1px solid #d1d5db;
+                bullets: [
 
-    border-radius: 7px;
+                    "Repeated reactions near the upper boundary.",
 
-    font-size: 14px;
-}
+                    "Repeated reactions near the lower boundary.",
 
+                    "Clear upper and lower boundaries.",
 
-textarea {
+                    "Avoid treating every small sideways movement as a range."
 
-    min-height: 100px;
+                ],
 
-    resize: vertical;
-}
+                tip:
+                    "A clearer range makes it easier to identify the breakout and subsequent retest."
+            },
 
 
-input:focus,
-textarea:focus {
+            {
+                title:
+                    "Mark Range High and Range Low",
 
-    outline: none;
+                timeframe:
+                    "15M",
 
-    border-color: #4b5563;
-}
+                text:
+                    "Clearly mark the upper and lower boundaries of the range.",
 
+                bullets: [
 
+                    "Range High = upper boundary.",
 
-/* ================= BUTTON ================= */
+                    "Range Low = lower boundary.",
 
-.primary-btn {
+                    "These become the important breakout areas.",
 
-    margin-top: 20px;
+                    "The middle of the range is generally not the area this strategy is targeting."
 
-    padding: 12px 20px;
+                ],
 
-    border: none;
+                tip:
+                    "Think of the range as the battlefield. You are waiting for price to leave it."
+            },
 
-    border-radius: 7px;
 
-    background: #111827;
+            {
+                title:
+                    "Stay Out of the Middle",
 
-    color: white;
+                timeframe:
+                    "15M",
 
-    cursor: pointer;
+                text:
+                    "Do not enter simply because price is moving inside the range.",
 
-    font-weight: bold;
-}
+                bullets: [
 
+                    "Wait for price to approach a boundary.",
 
-.primary-btn:hover {
+                    "Avoid random entries in the middle.",
 
-    background: #374151;
-}
+                    "Wait for the range to actually break."
 
+                ],
 
+                tip:
+                    "This strategy focuses on the transition from range to breakout rather than random movements inside the range."
+            },
 
-/* ================= TRADES ================= */
 
-.trade-item {
+            {
+                title:
+                    "Wait for the Actual Breakout",
 
-    border-bottom: 1px solid #e5e7eb;
+                timeframe:
+                    "15M",
 
-    padding: 15px 0;
+                text:
+                    "Price must break beyond either the Range High or Range Low.",
 
-    display: flex;
+                bullets: [
 
-    justify-content: space-between;
+                    "Bullish breakout → above Range High.",
 
-    align-items: center;
-}
+                    "Bearish breakout → below Range Low.",
 
+                    "Do not assume a brief move beyond the level is automatically valid."
 
-.trade-item:last-child {
+                ],
 
-    border-bottom: none;
-}
+                tip:
+                    "The breakout creates the potential setup, but you still need to see whether price can hold outside the range."
+            },
 
 
-.trade-info strong {
+            {
+                title:
+                    "Wait for Acceptance Outside the Range",
 
-    display: block;
+                timeframe:
+                    "15M",
 
-    margin-bottom: 5px;
-}
+                text:
+                    "After the breakout, observe whether price can remain outside the range.",
 
+                bullets: [
 
-.trade-info small {
+                    "Candle closes outside the range.",
 
-    color: #6b7280;
-}
+                    "Price shows displacement.",
 
+                    "Volume may support the breakout.",
 
-.profit {
+                    "Price does not immediately fall back into the range."
 
-    color: #15803d;
+                ],
 
-    font-weight: bold;
-}
+                tip:
+                    "This helps distinguish a potential genuine breakout from a breakout that immediately fails."
+            },
 
 
-.loss {
+            {
+                title:
+                    "Wait for the Retest",
 
-    color: #dc2626;
+                timeframe:
+                    "15M",
 
-    font-weight: bold;
-}
+                text:
+                    "After acceptance, wait for price to return toward the breakout level.",
 
+                bullets: [
 
-.break-even {
+                    "Bullish → retest the Range High.",
 
-    color: #6b7280;
+                    "Bearish → retest the Range Low.",
 
-    font-weight: bold;
-}
+                    "Avoid chasing the initial breakout."
 
+                ],
 
-.empty {
+                tip:
+                    "The old range boundary becomes the important retest area."
+            },
 
-    color: #9ca3af;
 
-    padding: 15px 0;
-}
+            {
+                title:
+                    "Look for Confirmation",
 
+                timeframe:
+                    "5M",
 
+                text:
+                    "During the retest, move to the 5M chart and look for rejection and structure confirmation.",
 
-/* ================= CALENDAR ================= */
+                bullets: [
 
-.calendar-controls {
+                    "Bullish breakout → bullish rejection/structure.",
 
-    display: flex;
+                    "Bearish breakout → bearish rejection/structure.",
 
-    align-items: center;
+                    "Look for confirmation around the breakout level."
 
-    justify-content: space-between;
+                ],
 
-    margin-bottom: 20px;
-}
+                tip:
+                    "The retest provides the location while the 5M chart helps confirm the entry."
+            },
 
 
-.calendar-controls button {
+            {
+                title:
+                    "Set the Stop Loss",
 
-    border: none;
+                timeframe:
+                    "5M",
 
-    background: #111827;
+                text:
+                    "Place the SL beyond the structure that invalidates the retest.",
 
-    color: white;
+                bullets: [
 
-    padding: 10px 15px;
+                    "Bullish → potentially below the retest structure.",
 
-    border-radius: 6px;
+                    "Bearish → potentially above the retest structure.",
 
-    cursor: pointer;
-}
+                    "The SL should have a logical invalidation point."
 
+                ],
 
-.calendar-summary {
+                tip:
+                    "If price completely loses the breakout level, the original setup may be invalidated."
+            },
 
-    display: grid;
 
-    grid-template-columns:
-        repeat(4, 1fr);
+            {
+                title:
+                    "Set the Take Profit",
 
-    gap: 15px;
+                timeframe:
+                    "15M / 1H",
 
-    margin-bottom: 20px;
-}
+                text:
+                    "Choose a logical target in the direction of the breakout.",
 
+                bullets: [
 
-.calendar-summary div {
+                    "Resistance",
 
-    background: white;
+                    "Support",
 
-    border: 1px solid #e5e7eb;
+                    "Previous high or low",
 
-    border-radius: 10px;
+                    "Liquidity",
 
-    padding: 18px;
-}
+                    "Another major price level"
 
+                ],
 
-.calendar-summary span {
+                tip:
+                    "Plan the target before entering so the trade has a defined objective."
+            }
 
-    display: block;
+        ],
 
-    font-size: 13px;
 
-    color: #6b7280;
+        flow:
+            "Range → Breakout → Acceptance → Retest → 5M Confirmation → Entry → SL → TP"
 
-    margin-bottom: 5px;
-}
+    },
 
 
-.calendar-summary strong {
 
-    font-size: 20px;
-}
+    /* =====================================================
+       STRATEGY 3
+       ===================================================== */
 
+    failed: {
 
-.calendar {
+        name:
+            "Failed Breakout → Reversal",
 
-    background: white;
+        description:
+            "This strategy looks for a breakout that fails, followed by price returning inside the previous range or level and then reversing in the opposite direction.",
 
-    border: 1px solid #e5e7eb;
 
-    border-radius: 12px;
+        steps: [
 
-    overflow: hidden;
+            {
+                title:
+                    "Mark an Important Level",
 
-    margin-bottom: 25px;
-}
+                timeframe:
+                    "15M",
 
+                text:
+                    "Identify an important level where a breakout could occur.",
 
-.calendar-weekdays,
-.calendar-days {
+                bullets: [
 
-    display: grid;
+                    "Range High",
 
-    grid-template-columns:
-        repeat(7, 1fr);
-}
+                    "Range Low",
 
+                    "Previous high",
 
-.calendar-weekdays div {
+                    "Previous low",
 
-    padding: 15px;
+                    "Equal highs",
 
-    text-align: center;
+                    "Equal lows",
 
-    font-weight: bold;
+                    "Major support or resistance"
 
-    background: #f9fafb;
+                ],
 
-    border-bottom: 1px solid #e5e7eb;
-}
+                tip:
+                    "You need a meaningful level first. Otherwise there is no clear breakout failure to trade."
+            },
 
 
-.calendar-day {
+            {
+                title:
+                    "Wait for the Breakout",
 
-    min-height: 100px;
+                timeframe:
+                    "15M",
 
-    padding: 10px;
+                text:
+                    "Allow price to actually break through the important level.",
 
-    border-right: 1px solid #e5e7eb;
+                bullets: [
 
-    border-bottom: 1px solid #e5e7eb;
+                    "Bullish breakout → above the level.",
 
-    cursor: pointer;
-}
+                    "Bearish breakout → below the level.",
 
+                    "Do not enter immediately."
 
-.calendar-day:hover {
+                ],
 
-    background: #f9fafb;
-}
+                tip:
+                    "The breakout creates the possibility of a failed breakout. You are waiting to see what happens next."
+            },
 
 
-.calendar-day-number {
+            {
+                title:
+                    "Do Not Enter Immediately",
 
-    font-weight: bold;
-}
+                timeframe:
+                    "15M",
 
+                text:
+                    "A breakout alone is not a reversal signal.",
 
-.day-pnl {
+                bullets: [
 
-    margin-top: 10px;
+                    "Do not short simply because price broke upward.",
 
-    font-size: 13px;
+                    "Do not long simply because price broke downward.",
 
-    font-weight: bold;
-}
+                    "Wait for evidence that the breakout is failing."
 
+                ],
 
-.day-trades {
+                tip:
+                    "The goal is to trade a confirmed failed breakout rather than predict that a breakout will fail."
+            },
 
-    margin-top: 4px;
 
-    font-size: 11px;
+            {
+                title:
+                    "Wait for the Breakout to Fail",
 
-    color: #6b7280;
-}
+                timeframe:
+                    "15M",
 
+                text:
+                    "Price needs to move back through the breakout level and close back inside the previous range or area.",
 
+                bullets: [
 
-/* ================= STRATEGY TABS ================= */
+                    "Upside breakout failure → price breaks above, then closes back below the breakout area.",
 
-.strategy-tabs {
+                    "Downside breakout failure → price breaks below, then closes back above the breakout area.",
 
-    display: grid;
+                    "The return inside the range is important evidence of failure."
 
-    grid-template-columns:
-        repeat(3, 1fr);
+                ],
 
-    gap: 10px;
+                tip:
+                    "This is the point where a potential breakout becomes a potential reversal setup."
+            },
 
-    margin-bottom: 25px;
-}
 
+            {
+                title:
+                    "Wait for Reversal Structure",
 
-.strategy-tab {
+                timeframe:
+                    "5M",
 
-    border: 1px solid #d1d5db;
+                text:
+                    "Move to the 5M chart and look for structure confirmation in the reversal direction.",
 
-    background: white;
+                bullets: [
 
-    padding: 15px;
+                    "Failed upside breakout → bearish structure.",
 
-    border-radius: 8px;
+                    "Failed downside breakout → bullish structure.",
 
-    cursor: pointer;
+                    "Do not force the reversal before structure confirms it."
 
-    font-weight: bold;
-}
+                ],
 
+                tip:
+                    "The 15M identifies the failed breakout. The 5M helps identify the reversal entry."
+            },
 
-.strategy-tab:hover {
 
-    background: #f3f4f6;
-}
+            {
+                title:
+                    "Wait for the Retest",
 
+                timeframe:
+                    "5M",
 
-.strategy-tab.active {
+                text:
+                    "After reversal structure appears, wait for price to retest an appropriate area.",
 
-    background: #111827;
+                bullets: [
 
-    color: white;
+                    "Failed breakout area",
 
-    border-color: #111827;
-}
+                    "Support/resistance",
 
+                    "Supply/demand",
 
+                    "Fair Value Gap",
 
-/* ================= STRATEGY HEADER ================= */
+                    "Broken structure"
 
-.strategy-header {
+                ],
 
-    background: #111827;
+                tip:
+                    "The retest gives you a more controlled entry instead of chasing the reversal."
+            },
 
-    color: white;
 
-    padding: 30px;
+            {
+                title:
+                    "Set the Stop Loss",
 
-    border-radius: 12px;
+                timeframe:
+                    "5M",
 
-    margin-bottom: 20px;
-}
+                text:
+                    "Place the SL beyond the failed breakout area.",
 
+                bullets: [
 
-.strategy-header h2 {
+                    "Bearish reversal → potentially beyond the failed breakout high.",
 
-    margin-bottom: 10px;
+                    "Bullish reversal → potentially beyond the failed breakout low.",
 
-    font-size: 25px;
-}
+                    "The level should represent where the reversal idea becomes invalid."
 
+                ],
 
-.strategy-header p {
+                tip:
+                    "If price moves back through the failed breakout extreme, the reversal setup may be invalidated."
+            },
 
-    color: #d1d5db;
 
-    line-height: 1.7;
-}
+            {
+                title:
+                    "Set the Take Profit",
 
+                timeframe:
+                    "15M / 1H",
 
+                text:
+                    "Use logical areas inside or on the opposite side of the previous range as targets.",
 
-/* ================= STRATEGY STATS ================= */
+                bullets: [
 
-.strategy-stats {
+                    "Range midpoint",
 
-    display: grid;
+                    "Range Low",
 
-    grid-template-columns:
-        repeat(6, 1fr);
+                    "Range High",
 
-    gap: 12px;
+                    "Opposing liquidity",
 
-    margin-bottom: 20px;
-}
+                    "Previous swing"
 
+                ],
 
-.strategy-stat {
+                tip:
+                    "The available target depends on the structure and how much room price has to move."
+            }
 
-    background: white;
+        ],
 
-    border: 1px solid #e5e7eb;
 
-    border-radius: 10px;
+        flow:
+            "Key Level → Breakout → Failure → Close Back Inside → 5M Reversal Structure → Retest → Entry → SL → TP"
 
-    padding: 18px;
-}
+    }
 
+};
 
-.strategy-stat span {
 
-    display: block;
 
-    color: #6b7280;
+/* =========================================================
+   PAGE NAVIGATION
+   ========================================================= */
 
-    font-size: 12px;
+function showPage(pageId) {
 
-    margin-bottom: 6px;
-}
+    document
+        .querySelectorAll(".page")
+        .forEach(page => {
 
+            page.classList.remove("active");
 
-.strategy-stat strong {
+        });
 
-    font-size: 20px;
-}
 
+    const page =
+        document.getElementById(pageId);
 
 
-/* ================= QUICK FLOW ================= */
+    if (page) {
 
-.quick-flow {
+        page.classList.add("active");
 
-    background: white;
+    }
 
-    border: 1px solid #e5e7eb;
 
-    border-radius: 12px;
+    if (pageId === "dashboard") {
 
-    padding: 25px;
+        updateDashboard();
 
-    margin-bottom: 20px;
-}
+    }
 
 
-.quick-flow h3 {
+    if (pageId === "journal") {
 
-    margin-bottom: 15px;
-}
+        renderTradeHistory();
 
+    }
 
-.flow {
 
-    font-weight: bold;
+    if (pageId === "calendar") {
 
-    line-height: 2;
+        renderCalendar();
 
-    color: #374151;
-}
+    }
 
 
+    if (pageId === "strategies") {
 
-/* ================= GUIDE ================= */
+        renderStrategy();
 
-.guide-step {
+        renderStrategyComparison();
 
-    background: white;
-
-    border: 1px solid #e5e7eb;
-
-    border-radius: 10px;
-
-    padding: 25px;
-
-    margin-bottom: 15px;
-}
-
-
-.guide-step h3 {
-
-    display: flex;
-
-    align-items: center;
-
-    margin-bottom: 15px;
-}
-
-
-.step-number {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    width: 35px;
-
-    height: 35px;
-
-    border-radius: 50%;
-
-    background: #111827;
-
-    color: white;
-
-    font-weight: bold;
-
-    margin-right: 10px;
-
-    flex-shrink: 0;
-}
-
-
-.guide-step p {
-
-    line-height: 1.7;
-
-    color: #4b5563;
-
-    margin-bottom: 12px;
-}
-
-
-.guide-step ul {
-
-    margin-left: 25px;
-
-    color: #4b5563;
-
-    line-height: 1.8;
-}
-
-
-.guide-step li {
-
-    margin-bottom: 4px;
-}
-
-
-.tip-box {
-
-    background: #f9fafb;
-
-    border-left: 4px solid #111827;
-
-    padding: 15px 18px;
-
-    margin-top: 15px;
-
-    line-height: 1.6;
-}
-
-
-
-/* ================= RESULT ================= */
-
-.result-card {
-
-    background: white;
-
-    border: 1px solid #e5e7eb;
-
-    border-radius: 12px;
-
-    padding: 25px;
-
-    margin-top: 20px;
-
-    margin-bottom: 25px;
-}
-
-
-.result-card p {
-
-    color: #6b7280;
-
-    line-height: 1.6;
-}
-
-
-.result-form {
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 15px;
-
-    margin-top: 20px;
-}
-
-
-.result-form label {
-
-    display: block;
-
-    margin-bottom: 7px;
-}
-
-
-.result-form input {
-
-    width: 100%;
-}
-
-
-.ratio-help {
-
-    font-size: 13px;
-
-    color: #6b7280;
-
-    margin-top: 5px;
-}
-
-
-.result-buttons {
-
-    display: flex;
-
-    gap: 10px;
-
-    margin-top: 15px;
-}
-
-
-.result-buttons button {
-
-    flex: 1;
-
-    padding: 13px;
-
-    border: none;
-
-    border-radius: 7px;
-
-    cursor: pointer;
-
-    font-weight: bold;
-}
-
-
-.win-btn {
-
-    background: #dcfce7;
-
-    color: #166534;
-}
-
-
-.loss-btn {
-
-    background: #fee2e2;
-
-    color: #991b1b;
-}
-
-
-.result-buttons button:hover {
-
-    filter: brightness(0.95);
-}
-
-
-
-/* ================= STRATEGY HISTORY ================= */
-
-.strategy-history {
-
-    margin-top: 10px;
-}
-
-
-.history-result {
-
-    font-weight: bold;
-}
-
-
-.history-r {
-
-    font-weight: bold;
-
-    font-size: 15px;
-}
-
-
-
-/* ================= COMPARISON ================= */
-
-.comparison-section {
-
-    margin-top: 35px;
-
-    background: white;
-
-    border: 1px solid #e5e7eb;
-
-    border-radius: 12px;
-
-    padding: 25px;
-}
-
-
-.comparison-header {
-
-    margin-bottom: 20px;
-}
-
-
-.comparison-header h2 {
-
-    margin-bottom: 7px;
-}
-
-
-.comparison-header p {
-
-    color: #6b7280;
-
-    line-height: 1.6;
-}
-
-
-.comparison-table-container {
-
-    overflow-x: auto;
-}
-
-
-.comparison-table {
-
-    width: 100%;
-
-    border-collapse: collapse;
-
-    min-width: 800px;
-}
-
-
-.comparison-table th,
-.comparison-table td {
-
-    padding: 14px;
-
-    border-bottom: 1px solid #e5e7eb;
-
-    text-align: left;
-}
-
-
-.comparison-table th {
-
-    background: #f9fafb;
-
-    font-size: 13px;
-}
-
-
-.comparison-table td {
-
-    font-size: 14px;
-}
-
-
-.positive-r {
-
-    color: #15803d;
-
-    font-weight: bold;
-}
-
-
-.negative-r {
-
-    color: #dc2626;
-
-    font-weight: bold;
-}
-
-
-.neutral-r {
-
-    color: #6b7280;
-
-    font-weight: bold;
-}
-
-
-
-/* ================= RESPONSIVE ================= */
-
-@media (max-width: 900px) {
-
-    .strategy-stats {
-
-        grid-template-columns:
-            repeat(3, 1fr);
     }
 
 }
 
 
-@media (max-width: 800px) {
 
-    .navbar {
+/* =========================================================
+   ACTUAL TRADE JOURNAL
+   ========================================================= */
 
-        flex-direction: column;
+document
+    .getElementById("tradeForm")
+    .addEventListener(
+        "submit",
+        function(event) {
 
-        gap: 10px;
-
-        padding: 15px;
-    }
-
-
-    .nav-links {
-
-        flex-wrap: wrap;
-
-        justify-content: center;
-    }
+            event.preventDefault();
 
 
-    .stats-grid,
-    .calendar-summary {
-
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
+            const date =
+                document
+                    .getElementById("tradeDate")
+                    .value;
 
 
-    .form-grid {
-
-        grid-template-columns: 1fr;
-    }
-
-
-    .full-width {
-
-        grid-column: auto;
-    }
+            const crypto =
+                document
+                    .getElementById("crypto")
+                    .value
+                    .trim();
 
 
-    .strategy-tabs {
+            const pnl =
+                parseFloat(
+                    document
+                        .getElementById("pnl")
+                        .value
+                );
 
-        grid-template-columns: 1fr;
-    }
+
+            const notes =
+                document
+                    .getElementById("notes")
+                    .value
+                    .trim();
 
 
-    .result-form {
+            const trade = {
 
-        grid-template-columns: 1fr;
-    }
+                id: Date.now(),
+
+                type: "actual",
+
+                date: date,
+
+                crypto: crypto,
+
+                pnl: pnl,
+
+                notes: notes,
+
+                strategyId: null
+
+            };
+
+
+            trades.push(trade);
+
+
+            saveTrades();
+
+
+            this.reset();
+
+
+            setTodayDate();
+
+
+            updateDashboard();
+
+            renderTradeHistory();
+
+            renderCalendar();
+
+
+            alert("Trade saved!");
+
+        }
+    );
+
+
+
+/* =========================================================
+   SAVE
+   ========================================================= */
+
+function saveTrades() {
+
+    localStorage.setItem(
+        "cryptoTrades",
+        JSON.stringify(trades)
+    );
 
 }
 
 
-@media (max-width: 500px) {
 
-    .stats-grid,
-    .calendar-summary,
-    .strategy-stats {
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
 
-        grid-template-columns: 1fr;
-    }
+function updateDashboard() {
 
-
-    .calendar-weekdays div {
-
-        font-size: 11px;
-
-        padding: 10px 3px;
-    }
+    const actualTrades =
+        getActualTrades();
 
 
-    .calendar-day {
+    const totalPnL =
+        actualTrades.reduce(
+            (total, trade) =>
+                total +
+                Number(trade.pnl || 0),
+            0
+        );
 
-        min-height: 65px;
 
-        padding: 6px;
-    }
+    const wins =
+        actualTrades.filter(
+            trade =>
+                Number(trade.pnl) > 0
+        ).length;
+
+
+    const losses =
+        actualTrades.filter(
+            trade =>
+                Number(trade.pnl) < 0
+        ).length;
+
+
+    const total =
+        actualTrades.length;
+
+
+    const winRate =
+        total > 0
+            ? ((wins / total) * 100).toFixed(1)
+            : 0;
+
+
+    document
+        .getElementById("totalPnL")
+        .textContent =
+            formatMoney(totalPnL);
+
+
+    document
+        .getElementById("totalTrades")
+        .textContent =
+            total;
+
+
+    document
+        .getElementById("winRate")
+        .textContent =
+            `${winRate}%`;
+
+
+    document
+        .getElementById("winsLosses")
+        .textContent =
+            `${wins} / ${losses}`;
+
+
+    updatePnLClass(
+        document.getElementById("totalPnL"),
+        totalPnL
+    );
+
+
+    renderRecentTrades();
 
 }
+
+
+
+/* =========================================================
+   RECENT TRADES
+   ========================================================= */
+
+function renderRecentTrades() {
+
+    const container =
+        document.getElementById(
+            "recentTrades"
+        );
+
+
+    const actualTrades =
+        getActualTrades()
+            .sort(
+                (a, b) =>
+                    b.id - a.id
+            )
+            .slice(0, 5);
+
+
+    if (
+        actualTrades.length === 0
+    ) {
+
+        container.innerHTML = `
+            <p class="empty">
+                No trades recorded yet.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        actualTrades
+            .map(trade => {
+
+                const className =
+                    getPnLClass(
+                        trade.pnl
+                    );
+
+
+                return `
+
+                    <div class="trade-item">
+
+                        <div class="trade-info">
+
+                            <strong>
+                                ${escapeHTML(
+                                    trade.crypto
+                                )}
+                            </strong>
+
+                            <small>
+                                ${trade.date}
+                            </small>
+
+                        </div>
+
+                        <div class="${className}">
+                            ${formatMoney(
+                                trade.pnl
+                            )}
+                        </div>
+
+                    </div>
+
+                `;
+
+            })
+            .join("");
+
+}
+
+
+
+/* =========================================================
+   TRADE HISTORY
+   ========================================================= */
+
+function renderTradeHistory() {
+
+    const container =
+        document.getElementById(
+            "tradeHistory"
+        );
+
+
+    const actualTrades =
+        getActualTrades()
+            .sort(
+                (a, b) =>
+                    b.id - a.id
+            );
+
+
+    if (
+        actualTrades.length === 0
+    ) {
+
+        container.innerHTML = `
+            <p class="empty">
+                No trades recorded yet.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        actualTrades
+            .map(trade => {
+
+                const className =
+                    getPnLClass(
+                        trade.pnl
+                    );
+
+
+                return `
+
+                    <div class="trade-item">
+
+                        <div class="trade-info">
+
+                            <strong>
+                                ${escapeHTML(
+                                    trade.crypto
+                                )}
+                            </strong>
+
+                            <small>
+                                ${trade.date}
+                            </small>
+
+                            ${
+                                trade.notes
+                                    ? `
+                                        <p>
+                                            ${escapeHTML(
+                                                trade.notes
+                                            )}
+                                        </p>
+                                      `
+                                    : ""
+                            }
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="${className}">
+                                ${formatMoney(
+                                    trade.pnl
+                                )}
+                            </div>
+
+
+                            <button
+                                onclick="deleteTrade(
+                                    ${trade.id}
+                                )"
+                                style="
+                                    margin-top:8px;
+                                    border:none;
+                                    background:none;
+                                    color:#dc2626;
+                                    cursor:pointer;
+                                "
+                            >
+                                Delete
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            })
+            .join("");
+
+}
+
+
+
+/* =========================================================
+   DELETE
+   ========================================================= */
+
+function deleteTrade(id) {
+
+    if (
+        !confirm(
+            "Delete this record?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    trades =
+        trades.filter(
+            trade =>
+                trade.id !== id
+        );
+
+
+    saveTrades();
+
+
+    updateDashboard();
+
+    renderTradeHistory();
+
+    renderCalendar();
+
+    renderStrategy();
+
+    renderStrategyComparison();
+
+}
+
+
+
+/* =========================================================
+   CALENDAR
+   ========================================================= */
+
+function changeMonth(direction) {
+
+    currentCalendarDate.setMonth(
+        currentCalendarDate.getMonth() +
+        direction
+    );
+
+
+    renderCalendar();
+
+}
+
+
+
+function renderCalendar() {
+
+    const year =
+        currentCalendarDate
+            .getFullYear();
+
+
+    const month =
+        currentCalendarDate
+            .getMonth();
+
+
+    const monthName =
+        currentCalendarDate
+            .toLocaleString(
+                "default",
+                {
+                    month: "long"
+                }
+            );
+
+
+    document
+        .getElementById(
+            "calendarMonth"
+        )
+        .textContent =
+            `${monthName} ${year}`;
+
+
+    const calendarDays =
+        document.getElementById(
+            "calendarDays"
+        );
+
+
+    calendarDays.innerHTML = "";
+
+
+    const firstDay =
+        new Date(
+            year,
+            month,
+            1
+        ).getDay();
+
+
+    const daysInMonth =
+        new Date(
+            year,
+            month + 1,
+            0
+        ).getDate();
+
+
+    for (
+        let i = 0;
+        i < firstDay;
+        i++
+    ) {
+
+        const empty =
+            document.createElement(
+                "div"
+            );
+
+
+        empty.className =
+            "calendar-day";
+
+
+        calendarDays.appendChild(
+            empty
+        );
+
+    }
+
+
+    for (
+        let day = 1;
+        day <= daysInMonth;
+        day++
+    ) {
+
+        const dateString =
+            `${year}-${String(
+                month + 1
+            ).padStart(2, "0")}-${String(
+                day
+            ).padStart(2, "0")}`;
+
+
+        const dayTrades =
+            getActualTrades()
+                .filter(
+                    trade =>
+                        trade.date ===
+                        dateString
+                );
+
+
+        const dayPnL =
+            dayTrades.reduce(
+                (sum, trade) =>
+                    sum +
+                    Number(
+                        trade.pnl || 0
+                    ),
+                0
+            );
+
+
+        const cell =
+            document.createElement(
+                "div"
+            );
+
+
+        cell.className =
+            "calendar-day";
+
+
+        cell.onclick =
+            () =>
+                showDayTrades(
+                    dateString
+                );
+
+
+        let pnlHTML = "";
+
+
+        if (
+            dayTrades.length > 0
+        ) {
+
+            const className =
+                getPnLClass(
+                    dayPnL
+                );
+
+
+            pnlHTML = `
+
+                <div class="day-pnl ${className}">
+                    ${formatMoney(
+                        dayPnL
+                    )}
+                </div>
+
+                <div class="day-trades">
+                    ${dayTrades.length}
+                    trade${
+                        dayTrades.length !== 1
+                            ? "s"
+                            : ""
+                    }
+                </div>
+
+            `;
+
+        }
+
+
+        cell.innerHTML = `
+
+            <div class="calendar-day-number">
+                ${day}
+            </div>
+
+            ${pnlHTML}
+
+        `;
+
+
+        calendarDays.appendChild(
+            cell
+        );
+
+    }
+
+
+    updateMonthlyStats(
+        year,
+        month
+    );
+
+}
+
+
+
+function updateMonthlyStats(
+    year,
+    month
+) {
+
+    const monthTrades =
+        getActualTrades()
+            .filter(trade => {
+
+                const date =
+                    new Date(
+                        trade.date
+                    );
+
+
+                return (
+
+                    date.getFullYear() ===
+                    year &&
+
+                    date.getMonth() ===
+                    month
+
+                );
+
+            });
+
+
+    const pnl =
+        monthTrades.reduce(
+            (sum, trade) =>
+                sum +
+                Number(
+                    trade.pnl || 0
+                ),
+            0
+        );
+
+
+    const wins =
+        monthTrades.filter(
+            trade =>
+                trade.pnl > 0
+        ).length;
+
+
+    const losses =
+        monthTrades.filter(
+            trade =>
+                trade.pnl < 0
+        ).length;
+
+
+    document
+        .getElementById(
+            "monthlyPnL"
+        )
+        .textContent =
+            formatMoney(pnl);
+
+
+    document
+        .getElementById(
+            "monthlyTrades"
+        )
+        .textContent =
+            monthTrades.length;
+
+
+    document
+        .getElementById(
+            "monthlyWins"
+        )
+        .textContent =
+            wins;
+
+
+    document
+        .getElementById(
+            "monthlyLosses"
+        )
+        .textContent =
+            losses;
+
+
+    updatePnLClass(
+        document.getElementById(
+            "monthlyPnL"
+        ),
+        pnl
+    );
+
+}
+
+
+
+function showDayTrades(date) {
+
+    const container =
+        document.getElementById(
+            "selectedDayTrades"
+        );
+
+
+    const title =
+        document.getElementById(
+            "selectedDayTitle"
+        );
+
+
+    title.textContent =
+        `Trades on ${date}`;
+
+
+    const dayTrades =
+        getActualTrades()
+            .filter(
+                trade =>
+                    trade.date ===
+                    date
+            );
+
+
+    if (
+        dayTrades.length === 0
+    ) {
+
+        container.innerHTML = `
+            <p class="empty">
+                No trades on this day.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        dayTrades
+            .map(trade => {
+
+                return `
+
+                    <div class="trade-item">
+
+                        <div class="trade-info">
+
+                            <strong>
+                                ${escapeHTML(
+                                    trade.crypto
+                                )}
+                            </strong>
+
+                            ${
+                                trade.notes
+                                    ? `
+                                        <small>
+                                            ${escapeHTML(
+                                                trade.notes
+                                            )}
+                                        </small>
+                                      `
+                                    : ""
+                            }
+
+                        </div>
+
+                        <div class="${getPnLClass(
+                            trade.pnl
+                        )}">
+                            ${formatMoney(
+                                trade.pnl
+                            )}
+                        </div>
+
+                    </div>
+
+                `;
+
+            })
+            .join("");
+
+}
+
+
+
+/* =========================================================
+   STRATEGY SELECTION
+   ========================================================= */
+
+function selectStrategy(
+    strategyId
+) {
+
+    selectedStrategy =
+        strategyId;
+
+
+    document
+        .querySelectorAll(
+            ".strategy-tab"
+        )
+        .forEach(
+            tab =>
+                tab.classList.remove(
+                    "active"
+                )
+        );
+
+
+    const tabs =
+        document.querySelectorAll(
+            ".strategy-tab"
+        );
+
+
+    if (
+        strategyId ===
+        "liquidity"
+    ) {
+
+        tabs[0]
+            .classList
+            .add("active");
+
+    }
+
+
+    if (
+        strategyId ===
+        "range"
+    ) {
+
+        tabs[1]
+            .classList
+            .add("active");
+
+    }
+
+
+    if (
+        strategyId ===
+        "failed"
+    ) {
+
+        tabs[2]
+            .classList
+            .add("active");
+
+    }
+
+
+    renderStrategy();
+
+}
+
+
+
+/* =========================================================
+   RENDER STRATEGY
+   ========================================================= */
+
+function renderStrategy() {
+
+    const strategy =
+        strategies[
+            selectedStrategy
+        ];
+
+
+    const container =
+        document.getElementById(
+            "strategyContent"
+        );
+
+
+    const stats =
+        getStrategyStats(
+            selectedStrategy
+        );
+
+
+    container.innerHTML = `
+
+
+        <!-- STRATEGY HEADER -->
+
+        <div class="strategy-header">
+
+            <h2>
+                ${strategy.name}
+            </h2>
+
+            <p>
+                ${strategy.description}
+            </p>
+
+        </div>
+
+
+
+        <!-- STRATEGY STATISTICS -->
+
+        <div class="strategy-stats">
+
+
+            <div class="strategy-stat">
+
+                <span>
+                    Tests
+                </span>
+
+                <strong>
+                    ${stats.total}
+                </strong>
+
+            </div>
+
+
+            <div class="strategy-stat">
+
+                <span>
+                    Wins
+                </span>
+
+                <strong>
+                    ${stats.wins}
+                </strong>
+
+            </div>
+
+
+            <div class="strategy-stat">
+
+                <span>
+                    Losses
+                </span>
+
+                <strong>
+                    ${stats.losses}
+                </strong>
+
+            </div>
+
+
+            <div class="strategy-stat">
+
+                <span>
+                    Win Rate
+                </span>
+
+                <strong>
+                    ${stats.winRate}%
+                </strong>
+
+            </div>
+
+
+            <div class="strategy-stat">
+
+                <span>
+                    Total R
+                </span>
+
+                <strong class="${getRClass(
+                    stats.totalR
+                )}">
+                    ${formatR(
+                        stats.totalR
+                    )}
+                </strong>
+
+            </div>
+
+
+            <div class="strategy-stat">
+
+                <span>
+                    Avg R / Trade
+                </span>
+
+                <strong class="${getRClass(
+                    stats.averageR
+                )}">
+                    ${formatR(
+                        stats.averageR
+                    )}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- QUICK FLOW -->
+
+        <div class="quick-flow">
+
+            <h3>
+                Quick Flow
+            </h3>
+
+            <div class="flow">
+                ${strategy.flow}
+            </div>
+
+        </div>
+
+
+
+        <!-- DETAILED GUIDE -->
+
+        ${strategy.steps
+            .map(
+                (step, index) => `
+
+                    <div class="guide-step">
+
+                        <h3>
+
+                            <span class="step-number">
+                                ${index + 1}
+                            </span>
+
+                            ${step.title}
+
+                        </h3>
+
+
+                        <p>
+
+                            <strong>
+                                Timeframe:
+                            </strong>
+
+                            ${step.timeframe}
+
+                        </p>
+
+
+                        <p>
+                            ${step.text}
+                        </p>
+
+
+                        <ul>
+
+                            ${step.bullets
+                                .map(
+                                    bullet =>
+                                        `<li>
+                                            ${bullet}
+                                         </li>`
+                                )
+                                .join("")
+                            }
+
+                        </ul>
+
+
+                        <div class="tip-box">
+
+                            <strong>
+                                💡 Guide:
+                            </strong>
+
+                            ${step.tip}
+
+                        </div>
+
+                    </div>
+
+                `
+            )
+            .join("")
+        }
+
+
+
+        <!-- RECORD RESULT -->
+
+        <div class="result-card">
+
+            <h2>
+                Record Test Result
+            </h2>
+
+            <p>
+                After taking a trade using this strategy,
+                enter the Risk:Reward Ratio you actually used,
+                then record whether the trade succeeded or failed.
+            </p>
+
+
+            <div class="result-form">
+
+                <div>
+
+                    <label>
+                        Risk:Reward Ratio
+                    </label>
+
+                    <input
+                        type="text"
+                        id="rrrInput"
+                        placeholder="Example: 1:3"
+                    >
+
+                    <div class="ratio-help">
+                        Enter the ratio you planned,
+                        such as 1:2, 1:3, or 1:4.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="result-buttons">
+
+                <button
+                    class="win-btn"
+                    onclick="recordStrategyResult('WIN')"
+                >
+                    ✓ Succeeded
+                </button>
+
+
+                <button
+                    class="loss-btn"
+                    onclick="recordStrategyResult('LOSS')"
+                >
+                    ✕ Failed
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- HISTORY -->
+
+        <div class="card">
+
+            <h2>
+                Test History
+            </h2>
+
+            <div class="strategy-history">
+
+                ${renderStrategyHistoryHTML(
+                    selectedStrategy
+                )}
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+
+/* =========================================================
+   RECORD STRATEGY RESULT
+   ========================================================= */
+
+function recordStrategyResult(
+    result
+) {
+
+    const rrrInput =
+        document.getElementById(
+            "rrrInput"
+        );
+
+
+    const rrr =
+        parseRRR(
+            rrrInput.value
+        );
+
+
+    if (
+        rrr === null
+    ) {
+
+        alert(
+            "Please enter a valid Risk:Reward Ratio, such as 1:2, 1:3, or 1:4."
+        );
+
+        return;
+    }
+
+
+    const today =
+        new Date();
+
+
+    const date =
+        `${today.getFullYear()}-${String(
+            today.getMonth() + 1
+        ).padStart(2, "0")}-${String(
+            today.getDate()
+        ).padStart(2, "0")}`;
+
+
+    const time =
+        today.toLocaleTimeString(
+            [],
+            {
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+
+    /*
+       If the trade wins:
+
+       1:3 = +3R
+
+       If the trade loses:
+
+       1:3 = -1R
+    */
+
+    const resultR =
+        result === "WIN"
+            ? rrr
+            : -1;
+
+
+    const strategyTest = {
+
+        id: Date.now(),
+
+        type: "strategy",
+
+        date: date,
+
+        time: time,
+
+        strategyId:
+            selectedStrategy,
+
+        strategyResult:
+            result,
+
+        rrr:
+            rrr,
+
+        resultR:
+            resultR,
+
+        pnl: null
+
+    };
+
+
+    trades.push(
+        strategyTest
+    );
+
+
+    saveTrades();
+
+
+    renderStrategy();
+
+    renderStrategyComparison();
+
+}
+
+
+
+/* =========================================================
+   PARSE RRR
+   ========================================================= */
+
+function parseRRR(value) {
+
+    if (!value) {
+
+        return null;
+
+    }
+
+
+    value =
+        value
+            .trim()
+            .replace(/\s/g, "");
+
+
+    /*
+       Accept:
+
+       1:2
+       1:3
+       1:4
+
+       Also accept:
+
+       2
+       3
+       4
+
+       A number means
+       1:number.
+    */
+
+
+    if (
+        /^\d+(\.\d+)?$/.test(
+            value
+        )
+    ) {
+
+        const reward =
+            parseFloat(value);
+
+
+        if (
+            reward <= 0
+        ) {
+
+            return null;
+
+        }
+
+
+        return reward;
+
+    }
+
+
+    const parts =
+        value.split(":");
+
+
+    if (
+        parts.length !== 2
+    ) {
+
+        return null;
+
+    }
+
+
+    const risk =
+        parseFloat(
+            parts[0]
+        );
+
+
+    const reward =
+        parseFloat(
+            parts[1]
+        );
+
+
+    if (
+        !Number.isFinite(risk) ||
+        !Number.isFinite(reward) ||
+        risk <= 0 ||
+        reward <= 0
+    ) {
+
+        return null;
+
+    }
+
+
+    /*
+       Convert:
+
+       1:3 → 3R
+
+       2:6 → 3R
+    */
+
+    return reward / risk;
+
+}
+
+
+
+/* =========================================================
+   STRATEGY STATISTICS
+   ========================================================= */
+
+function getStrategyStats(
+    strategyId
+) {
+
+    const tests =
+        getStrategyTests(
+            strategyId
+        );
+
+
+    const wins =
+        tests.filter(
+            trade =>
+                trade.strategyResult ===
+                "WIN"
+        ).length;
+
+
+    const losses =
+        tests.filter(
+            trade =>
+                trade.strategyResult ===
+                "LOSS"
+        ).length;
+
+
+    const total =
+        tests.length;
+
+
+    const totalR =
+        tests.reduce(
+            (sum, trade) =>
+                sum +
+                Number(
+                    trade.resultR || 0
+                ),
+            0
+        );
+
+
+    const averageR =
+        total > 0
+            ? totalR / total
+            : 0;
+
+
+    const winRate =
+        total > 0
+            ? (
+                (wins / total) *
+                100
+            ).toFixed(1)
+            : "0.0";
+
+
+    /*
+       Expectancy:
+
+       (Win Rate × Average Win R)
+       +
+       (Loss Rate × Average Loss R)
+
+       Since every loss is -1R,
+       the average loss is -1R.
+
+       This is essentially the
+       average R gained/lost per trade.
+    */
+
+    const expectancy =
+        averageR;
+
+
+    const winningR =
+        tests
+            .filter(
+                trade =>
+                    trade.strategyResult ===
+                    "WIN"
+            )
+            .reduce(
+                (sum, trade) =>
+                    sum +
+                    Number(
+                        trade.resultR || 0
+                    ),
+                0
+            );
+
+
+    const losingR =
+        tests
+            .filter(
+                trade =>
+                    trade.strategyResult ===
+                    "LOSS"
+            )
+            .reduce(
+                (sum, trade) =>
+                    sum +
+                    Math.abs(
+                        Number(
+                            trade.resultR || 0
+                        )
+                    ),
+                0
+            );
+
+
+    const profitFactor =
+        losingR > 0
+            ? winningR / losingR
+            : winningR > 0
+                ? Infinity
+                : 0;
+
+
+    return {
+
+        total,
+
+        wins,
+
+        losses,
+
+        winRate,
+
+        totalR,
+
+        averageR,
+
+        expectancy,
+
+        winningR,
+
+        losingR,
+
+        profitFactor
+
+    };
+
+}
+
+
+
+/* =========================================================
+   STRATEGY HISTORY
+   ========================================================= */
+
+function renderStrategyHistoryHTML(
+    strategyId
+) {
+
+    const tests =
+        getStrategyTests(
+            strategyId
+        )
+        .sort(
+            (a, b) =>
+                b.id - a.id
+        );
+
+
+    if (
+        tests.length === 0
+    ) {
+
+        return `
+            <p class="empty">
+                No strategy tests recorded yet.
+            </p>
+        `;
+
+    }
+
+
+    return tests
+        .map(test => {
+
+            const isWin =
+                test.strategyResult ===
+                "WIN";
+
+
+            const resultClass =
+                isWin
+                    ? "profit"
+                    : "loss";
+
+
+            const resultText =
+                isWin
+                    ? "Succeeded"
+                    : "Failed";
+
+
+            return `
+
+                <div class="trade-item">
+
+                    <div class="trade-info">
+
+                        <strong
+                            class="${resultClass}"
+                        >
+                            ${resultText}
+                        </strong>
+
+
+                        <small>
+                            ${test.date}
+                            at
+                            ${test.time}
+                        </small>
+
+
+                        <small>
+                            Risk:Reward
+                            1:${Number(
+                                test.rrr
+                            ).toFixed(2)}
+                        </small>
+
+                    </div>
+
+
+                    <div>
+
+                        <div
+                            class="history-r
+                            ${getRClass(
+                                test.resultR
+                            )}"
+                        >
+                            ${formatR(
+                                test.resultR
+                            )}
+                        </div>
+
+
+                        <button
+                            onclick="deleteTrade(
+                                ${test.id}
+                            )"
+                            style="
+                                display:block;
+                                margin-top:8px;
+                                border:none;
+                                background:none;
+                                color:#dc2626;
+                                cursor:pointer;
+                            "
+                        >
+                            Delete
+                        </button>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        })
+        .join("");
+
+}
+
+
+
+/* =========================================================
+   STRATEGY COMPARISON
+   ========================================================= */
+
+function renderStrategyComparison() {
+
+    const container =
+        document.getElementById(
+            "strategyComparison"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    const strategyIds = [
+        "liquidity",
+        "range",
+        "failed"
+    ];
+
+
+    const rows =
+        strategyIds
+            .map(
+                strategyId => {
+
+                    const strategy =
+                        strategies[
+                            strategyId
+                        ];
+
+
+                    const stats =
+                        getStrategyStats(
+                            strategyId
+                        );
+
+
+                    return `
+
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    ${strategy.name}
+                                </strong>
+                            </td>
+
+
+                            <td>
+                                ${stats.total}
+                            </td>
+
+
+                            <td>
+                                ${stats.wins}
+                            </td>
+
+
+                            <td>
+                                ${stats.losses}
+                            </td>
+
+
+                            <td>
+                                ${stats.winRate}%
+                            </td>
+
+
+                            <td class="${getRClass(
+                                stats.totalR
+                            )}">
+                                ${formatR(
+                                    stats.totalR
+                                )}
+                            </td>
+
+
+                            <td class="${getRClass(
+                                stats.averageR
+                            )}">
+                                ${formatR(
+                                    stats.averageR
+                                )}
+                            </td>
+
+
+                            <td>
+                                ${formatProfitFactor(
+                                    stats.profitFactor
+                                )}
+                            </td>
+
+                        </tr>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    container.innerHTML = `
+
+        <table class="comparison-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Strategy
+                    </th>
+
+                    <th>
+                        Tests
+                    </th>
+
+                    <th>
+                        Wins
+                    </th>
+
+                    <th>
+                        Losses
+                    </th>
+
+                    <th>
+                        Win Rate
+                    </th>
+
+                    <th>
+                        Total R
+                    </th>
+
+                    <th>
+                        Avg R / Trade
+                    </th>
+
+                    <th>
+                        Profit Factor
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                ${rows}
+
+            </tbody>
+
+        </table>
+
+
+        <p
+            style="
+                margin-top:15px;
+                color:#6b7280;
+                font-size:13px;
+                line-height:1.6;
+            "
+        >
+            <strong>How to read this:</strong>
+            Total R shows the accumulated result from
+            your strategy tests. Avg R / Trade shows the
+            average result per test. Profit Factor compares
+            total winning R with total losing R.
+            Collect enough trades before drawing conclusions
+            from the numbers.
+        </p>
+
+    `;
+
+}
+
+
+
+/* =========================================================
+   DATA HELPERS
+   ========================================================= */
+
+function getActualTrades() {
+
+    return trades.filter(
+        trade =>
+            trade.type === "actual" ||
+            (
+                trade.type === undefined &&
+                trade.strategyId === null
+            )
+    );
+
+}
+
+
+
+function getStrategyTests(
+    strategyId
+) {
+
+    return trades.filter(
+        trade =>
+            trade.strategyId ===
+            strategyId
+    );
+
+}
+
+
+
+/* =========================================================
+   FORMATTING
+   ========================================================= */
+
+function formatMoney(
+    value
+) {
+
+    const number =
+        Number(value) || 0;
+
+
+    return `$${number.toFixed(2)}`;
+
+}
+
+
+
+function formatR(
+    value
+) {
+
+    const number =
+        Number(value) || 0;
+
+
+    if (
+        number > 0
+    ) {
+
+        return `+${number.toFixed(2)}R`;
+
+    }
+
+
+    return `${number.toFixed(2)}R`;
+
+}
+
+
+
+function formatProfitFactor(
+    value
+) {
+
+    if (
+        value === Infinity
+    ) {
+
+        return "∞";
+
+    }
+
+
+    if (
+        value === 0
+    ) {
+
+        return "0.00";
+
+    }
+
+
+    return value.toFixed(2);
+
+}
+
+
+
+function getPnLClass(
+    value
+) {
+
+    if (
+        Number(value) > 0
+    ) {
+
+        return "profit";
+
+    }
+
+
+    if (
+        Number(value) < 0
+    ) {
+
+        return "loss";
+
+    }
+
+
+    return "break-even";
+
+}
+
+
+
+function getRClass(
+    value
+) {
+
+    if (
+        Number(value) > 0
+    ) {
+
+        return "positive-r";
+
+    }
+
+
+    if (
+        Number(value) < 0
+    ) {
+
+        return "negative-r";
+
+    }
+
+
+    return "neutral-r";
+
+}
+
+
+
+function updatePnLClass(
+    element,
+    value
+) {
+
+    element.classList.remove(
+        "profit",
+        "loss",
+        "break-even"
+    );
+
+
+    element.classList.add(
+        getPnLClass(value)
+    );
+
+}
+
+
+
+function escapeHTML(
+    value
+) {
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+
+/* =========================================================
+   DATE
+   ========================================================= */
+
+function setTodayDate() {
+
+    const now =
+        new Date();
+
+
+    const date =
+        `${now.getFullYear()}-${String(
+            now.getMonth() + 1
+        ).padStart(2, "0")}-${String(
+            now.getDate()
+        ).padStart(2, "0")}`;
+
+
+    document
+        .getElementById(
+            "tradeDate"
+        )
+        .value =
+            date;
+
+}
+
+
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+setTodayDate();
+
+updateDashboard();
+
+renderTradeHistory();
+
+renderCalendar();
+
+renderStrategy();
+
+renderStrategyComparison();
