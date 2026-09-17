@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crypto Trading Journal</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="logo">Crypto Journal</div>
+
+      <div class="nav-links">
+        <button onclick="showSection('dashboard')">Dashboard</button>
+        <button onclick="showSection('journal')">Trade Journal</button>
+        <button onclick="showSection('calendar')">Calendar</button>
+        <button onclick="showSection('strategies')">Strategy Testing</button>
+      </div>
+    </nav>
+
+    <main>
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="section active">
+        <div class="page-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p>Your crypto trading overview</p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <p>Total P/L</p>
+            <h2 id="totalPnL">$0.00</h2>
+          </div>
+
+          <div class="stat-card">
+            <p>Total Trades</p>
+            <h2 id="totalTrades">0</h2>
+          </div>
+
+          <div class="stat-card">
+            <p>Win Rate</p>
+            <h2 id="winRate">0%</h2>
+          </div>
+
+          <div class="stat-card">
+            <p>Wins / Losses</p>
+            <h2 id="winsLosses">0 / 0</h2>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>Recent Trades</h2>
+            <button class="small-button" onclick="showSection('journal')">
+              View All
+            </button>
+          </div>
+
+          <div id="recentTrades"></div>
+        </div>
+      </section>
+
+      <!-- TRADE JOURNAL -->
+      <section id="journal" class="section">
+        <div class="page-header">
+          <div>
+            <h1>Trade Journal</h1>
+            <p>Record your actual crypto trades.</p>
+          </div>
+
+          <button class="primary-button" onclick="toggleTradeForm()">
+            + Add Trade
+          </button>
+        </div>
+
+        <div id="tradeForm" class="card form-card hidden">
+          <h2>Add Trade</h2>
+
+          <form onsubmit="addTrade(event)">
+            <div class="form-grid">
+              <div>
+                <label>Date</label>
+                <input type="date" id="tradeDate" required />
+              </div>
+
+              <div>
+                <label>Crypto</label>
+                <input
+                  type="text"
+                  id="tradeCrypto"
+                  placeholder="SOL/USDT"
+                  required
+                />
+              </div>
+
+              <div>
+                <label>Profit / Loss ($)</label>
+                <input
+                  type="number"
+                  id="tradePnL"
+                  step="0.01"
+                  placeholder="Example: 5 or -3"
+                  required
+                />
+              </div>
+
+              <div>
+                <label>Notes (optional)</label>
+                <input
+                  type="text"
+                  id="tradeNotes"
+                  placeholder="What happened?"
+                />
+              </div>
+            </div>
+
+            <div class="form-buttons">
+              <button type="submit" class="primary-button">Save Trade</button>
+
+              <button
+                type="button"
+                class="secondary-button"
+                onclick="toggleTradeForm()"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>Trade History</h2>
+            <span id="journalTradeCount">0 trades</span>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Crypto</th>
+                  <th>P/L</th>
+                  <th>Result</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+
+              <tbody id="tradeTable"></tbody>
+            </table>
+          </div>
+
+          <div id="noTrades" class="empty-state">No trades recorded yet.</div>
+        </div>
+      </section>
+
+      <!-- CALENDAR -->
+      <section id="calendar" class="section">
+        <div class="page-header">
+          <div>
+            <h1>Trading Calendar</h1>
+            <p>See how much you made or lost each day.</p>
+          </div>
+        </div>
+
+        <div class="calendar-top">
+          <button class="calendar-arrow" onclick="changeMonth(-1)">←</button>
+
+          <h2 id="calendarMonth"></h2>
+
+          <button class="calendar-arrow" onclick="changeMonth(1)">→</button>
+        </div>
+
+        <div class="monthly-stats">
+          <div>
+            <span>Monthly P/L</span>
+            <strong id="monthlyPnL">$0.00</strong>
+          </div>
+
+          <div>
+            <span>Trades</span>
+            <strong id="monthlyTrades">0</strong>
+          </div>
+
+          <div>
+            <span>Wins</span>
+            <strong id="monthlyWins">0</strong>
+          </div>
+
+          <div>
+            <span>Losses</span>
+            <strong id="monthlyLosses">0</strong>
+          </div>
+        </div>
+
+        <div class="calendar">
+          <div class="weekday">Mon</div>
+          <div class="weekday">Tue</div>
+          <div class="weekday">Wed</div>
+          <div class="weekday">Thu</div>
+          <div class="weekday">Fri</div>
+          <div class="weekday">Sat</div>
+          <div class="weekday">Sun</div>
+
+          <div id="calendarDays" class="calendar-days"></div>
+        </div>
+
+        <div id="selectedDay" class="card selected-day">
+          <h2>Select a day</h2>
+          <p>Click a day on the calendar to see its trades.</p>
+        </div>
+      </section>
+
+      <!-- STRATEGY TESTING -->
+      <section id="strategies" class="section">
+        <div class="page-header">
+          <div>
+            <h1>Strategy Testing</h1>
+            <p>Test your strategies without complicated data entry.</p>
+          </div>
+        </div>
+
+        <!-- CREATE STRATEGY -->
+        <div class="card">
+          <h2>Create Strategy</h2>
+
+          <form onsubmit="createStrategy(event)" class="strategy-create">
+            <input
+              type="text"
+              id="strategyName"
+              placeholder="Example: Supply & Demand"
+              required
+            />
+
+            <button type="submit" class="primary-button">
+              Create Strategy
+            </button>
+          </form>
+        </div>
+
+        <!-- STRATEGY LIST -->
+        <div class="card">
+          <div class="card-header">
+            <h2>My Strategies</h2>
+            <span id="strategyCount">0 strategies</span>
+          </div>
+
+          <div id="strategyList" class="strategy-list"></div>
+
+          <div id="noStrategies" class="empty-state">
+            Create your first strategy above.
+          </div>
+        </div>
+
+        <!-- SELECTED STRATEGY -->
+        <div id="strategyDetails" class="hidden">
+          <div class="card strategy-main">
+            <div class="strategy-title">
+              <div>
+                <p class="label">Testing</p>
+                <h2 id="selectedStrategyName">Strategy</h2>
+              </div>
+
+              <button class="delete-button" onclick="deleteSelectedStrategy()">
+                Delete Strategy
+              </button>
+            </div>
+
+            <!-- STRATEGY STATS -->
+            <div class="stats-grid strategy-stats">
+              <div class="stat-card">
+                <p>Total Trades</p>
+                <h2 id="strategyTotal">0</h2>
+              </div>
+
+              <div class="stat-card">
+                <p>Wins</p>
+                <h2 id="strategyWins">0</h2>
+              </div>
+
+              <div class="stat-card">
+                <p>Losses</p>
+                <h2 id="strategyLosses">0</h2>
+              </div>
+
+              <div class="stat-card">
+                <p>Win Rate</p>
+                <h2 id="strategyWinRate">0%</h2>
+              </div>
+            </div>
+
+            <!-- AUTOMATIC TRADE RECORDER -->
+            <div class="strategy-recorder">
+              <h3>Record Test Trade</h3>
+
+              <p>
+                After taking a trade using this strategy, simply record the
+                result.
+              </p>
+
+              <div class="result-buttons">
+                <button class="win-button" onclick="recordStrategyTrade('win')">
+                  ✓ WIN
+                </button>
+
+                <button
+                  class="loss-button"
+                  onclick="recordStrategyTrade('loss')"
+                >
+                  ✕ LOSS
+                </button>
+
+                <button class="be-button" onclick="recordStrategyTrade('be')">
+                  = BREAK EVEN
+                </button>
+              </div>
+            </div>
+
+            <!-- STRATEGY HISTORY -->
+            <div class="strategy-history">
+              <div class="card-header">
+                <h3>Trade History</h3>
+              </div>
+
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Trade</th>
+                      <th>Date</th>
+                      <th>Time</th>
+                      <th>Result</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+
+                  <tbody id="strategyTradeTable"></tbody>
+                </table>
+              </div>
+
+              <div id="noStrategyTrades" class="empty-state">
+                No test trades yet.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>Crypto Trading Journal</footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
