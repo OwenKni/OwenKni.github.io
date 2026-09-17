@@ -1,936 +1,1109 @@
-/* =========================================
-   DATA
-========================================= */
-
-let trades = JSON.parse(localStorage.getItem("cryptoTrades")) || [];
-
-let strategies = JSON.parse(localStorage.getItem("cryptoStrategies")) || [];
-
-let currentCalendarDate = new Date();
-
-let selectedStrategyId = null;
-
-/* =========================================
-   SAVE DATA
-========================================= */
-
-function saveTrades() {
-  localStorage.setItem("cryptoTrades", JSON.stringify(trades));
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-function saveStrategies() {
-  localStorage.setItem("cryptoStrategies", JSON.stringify(strategies));
+
+body {
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background: #f4f6f8;
+
+    color: #1f2937;
 }
 
-/* =========================================
-   BASIC FUNCTIONS
-========================================= */
 
-function showSection(sectionId) {
-  document.querySelectorAll(".section").forEach((section) => {
-    section.classList.remove("active");
-  });
+/* ================= NAVBAR ================= */
 
-  document.getElementById(sectionId).classList.add("active");
+.navbar {
 
-  if (sectionId === "dashboard") {
-    updateDashboard();
-  }
+    background: #111827;
 
-  if (sectionId === "journal") {
-    displayTrades();
-  }
+    color: white;
 
-  if (sectionId === "calendar") {
-    displayCalendar();
-  }
+    min-height: 65px;
 
-  if (sectionId === "strategies") {
-    displayStrategies();
+    display: flex;
 
-    if (selectedStrategyId !== null) {
-      displaySelectedStrategy();
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 30px;
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 100;
+}
+
+
+.logo {
+
+    font-size: 20px;
+
+    font-weight: bold;
+}
+
+
+.nav-links {
+
+    display: flex;
+
+    gap: 8px;
+}
+
+
+.nav-links button {
+
+    background: transparent;
+
+    border: none;
+
+    color: #d1d5db;
+
+    padding: 10px 14px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+}
+
+
+.nav-links button:hover {
+
+    background: #374151;
+
+    color: white;
+}
+
+
+
+/* ================= PAGES ================= */
+
+.page {
+
+    display: none;
+
+    max-width: 1200px;
+
+    margin: auto;
+
+    padding: 35px 20px;
+}
+
+
+.page.active {
+
+    display: block;
+}
+
+
+.page-header {
+
+    margin-bottom: 25px;
+}
+
+
+.page-header h1 {
+
+    font-size: 30px;
+
+    margin-bottom: 8px;
+}
+
+
+.page-header p {
+
+    color: #6b7280;
+
+    line-height: 1.6;
+}
+
+
+
+/* ================= CARDS ================= */
+
+.card {
+
+    background: white;
+
+    border-radius: 12px;
+
+    padding: 25px;
+
+    margin-bottom: 25px;
+
+    border: 1px solid #e5e7eb;
+}
+
+
+.card h2 {
+
+    margin-bottom: 20px;
+}
+
+
+
+/* ================= DASHBOARD ================= */
+
+.stats-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 20px;
+
+    margin-bottom: 25px;
+}
+
+
+.stat-card {
+
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 12px;
+
+    padding: 22px;
+}
+
+
+.stat-card span {
+
+    display: block;
+
+    color: #6b7280;
+
+    font-size: 14px;
+
+    margin-bottom: 8px;
+}
+
+
+.stat-card strong {
+
+    font-size: 25px;
+}
+
+
+
+/* ================= FORM ================= */
+
+.form-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 20px;
+}
+
+
+.form-group {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+.full-width {
+
+    grid-column: 1 / -1;
+}
+
+
+label {
+
+    font-size: 14px;
+
+    font-weight: bold;
+}
+
+
+input,
+textarea {
+
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 7px;
+
+    font-size: 14px;
+}
+
+
+textarea {
+
+    min-height: 100px;
+
+    resize: vertical;
+}
+
+
+input:focus,
+textarea:focus {
+
+    outline: none;
+
+    border-color: #4b5563;
+}
+
+
+
+/* ================= BUTTON ================= */
+
+.primary-btn {
+
+    margin-top: 20px;
+
+    padding: 12px 20px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    background: #111827;
+
+    color: white;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+
+.primary-btn:hover {
+
+    background: #374151;
+}
+
+
+
+/* ================= TRADES ================= */
+
+.trade-item {
+
+    border-bottom: 1px solid #e5e7eb;
+
+    padding: 15px 0;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+
+.trade-item:last-child {
+
+    border-bottom: none;
+}
+
+
+.trade-info strong {
+
+    display: block;
+
+    margin-bottom: 5px;
+}
+
+
+.trade-info small {
+
+    color: #6b7280;
+}
+
+
+.profit {
+
+    color: #15803d;
+
+    font-weight: bold;
+}
+
+
+.loss {
+
+    color: #dc2626;
+
+    font-weight: bold;
+}
+
+
+.break-even {
+
+    color: #6b7280;
+
+    font-weight: bold;
+}
+
+
+.empty {
+
+    color: #9ca3af;
+
+    padding: 15px 0;
+}
+
+
+
+/* ================= CALENDAR ================= */
+
+.calendar-controls {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 20px;
+}
+
+
+.calendar-controls button {
+
+    border: none;
+
+    background: #111827;
+
+    color: white;
+
+    padding: 10px 15px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+}
+
+
+.calendar-summary {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+
+.calendar-summary div {
+
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 10px;
+
+    padding: 18px;
+}
+
+
+.calendar-summary span {
+
+    display: block;
+
+    font-size: 13px;
+
+    color: #6b7280;
+
+    margin-bottom: 5px;
+}
+
+
+.calendar-summary strong {
+
+    font-size: 20px;
+}
+
+
+.calendar {
+
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    margin-bottom: 25px;
+}
+
+
+.calendar-weekdays,
+.calendar-days {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(7, 1fr);
+}
+
+
+.calendar-weekdays div {
+
+    padding: 15px;
+
+    text-align: center;
+
+    font-weight: bold;
+
+    background: #f9fafb;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+
+.calendar-day {
+
+    min-height: 100px;
+
+    padding: 10px;
+
+    border-right: 1px solid #e5e7eb;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    cursor: pointer;
+}
+
+
+.calendar-day:hover {
+
+    background: #f9fafb;
+}
+
+
+.calendar-day-number {
+
+    font-weight: bold;
+}
+
+
+.day-pnl {
+
+    margin-top: 10px;
+
+    font-size: 13px;
+
+    font-weight: bold;
+}
+
+
+.day-trades {
+
+    margin-top: 4px;
+
+    font-size: 11px;
+
+    color: #6b7280;
+}
+
+
+
+/* ================= STRATEGY TABS ================= */
+
+.strategy-tabs {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 10px;
+
+    margin-bottom: 25px;
+}
+
+
+.strategy-tab {
+
+    border: 1px solid #d1d5db;
+
+    background: white;
+
+    padding: 15px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+
+.strategy-tab:hover {
+
+    background: #f3f4f6;
+}
+
+
+.strategy-tab.active {
+
+    background: #111827;
+
+    color: white;
+
+    border-color: #111827;
+}
+
+
+
+/* ================= STRATEGY HEADER ================= */
+
+.strategy-header {
+
+    background: #111827;
+
+    color: white;
+
+    padding: 30px;
+
+    border-radius: 12px;
+
+    margin-bottom: 20px;
+}
+
+
+.strategy-header h2 {
+
+    margin-bottom: 10px;
+
+    font-size: 25px;
+}
+
+
+.strategy-header p {
+
+    color: #d1d5db;
+
+    line-height: 1.7;
+}
+
+
+
+/* ================= STRATEGY STATS ================= */
+
+.strategy-stats {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(6, 1fr);
+
+    gap: 12px;
+
+    margin-bottom: 20px;
+}
+
+
+.strategy-stat {
+
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 10px;
+
+    padding: 18px;
+}
+
+
+.strategy-stat span {
+
+    display: block;
+
+    color: #6b7280;
+
+    font-size: 12px;
+
+    margin-bottom: 6px;
+}
+
+
+.strategy-stat strong {
+
+    font-size: 20px;
+}
+
+
+
+/* ================= QUICK FLOW ================= */
+
+.quick-flow {
+
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 12px;
+
+    padding: 25px;
+
+    margin-bottom: 20px;
+}
+
+
+.quick-flow h3 {
+
+    margin-bottom: 15px;
+}
+
+
+.flow {
+
+    font-weight: bold;
+
+    line-height: 2;
+
+    color: #374151;
+}
+
+
+
+/* ================= GUIDE ================= */
+
+.guide-step {
+
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 10px;
+
+    padding: 25px;
+
+    margin-bottom: 15px;
+}
+
+
+.guide-step h3 {
+
+    display: flex;
+
+    align-items: center;
+
+    margin-bottom: 15px;
+}
+
+
+.step-number {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 35px;
+
+    height: 35px;
+
+    border-radius: 50%;
+
+    background: #111827;
+
+    color: white;
+
+    font-weight: bold;
+
+    margin-right: 10px;
+
+    flex-shrink: 0;
+}
+
+
+.guide-step p {
+
+    line-height: 1.7;
+
+    color: #4b5563;
+
+    margin-bottom: 12px;
+}
+
+
+.guide-step ul {
+
+    margin-left: 25px;
+
+    color: #4b5563;
+
+    line-height: 1.8;
+}
+
+
+.guide-step li {
+
+    margin-bottom: 4px;
+}
+
+
+.tip-box {
+
+    background: #f9fafb;
+
+    border-left: 4px solid #111827;
+
+    padding: 15px 18px;
+
+    margin-top: 15px;
+
+    line-height: 1.6;
+}
+
+
+
+/* ================= RESULT ================= */
+
+.result-card {
+
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 12px;
+
+    padding: 25px;
+
+    margin-top: 20px;
+
+    margin-bottom: 25px;
+}
+
+
+.result-card p {
+
+    color: #6b7280;
+
+    line-height: 1.6;
+}
+
+
+.result-form {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 15px;
+
+    margin-top: 20px;
+}
+
+
+.result-form label {
+
+    display: block;
+
+    margin-bottom: 7px;
+}
+
+
+.result-form input {
+
+    width: 100%;
+}
+
+
+.ratio-help {
+
+    font-size: 13px;
+
+    color: #6b7280;
+
+    margin-top: 5px;
+}
+
+
+.result-buttons {
+
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 15px;
+}
+
+
+.result-buttons button {
+
+    flex: 1;
+
+    padding: 13px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+
+.win-btn {
+
+    background: #dcfce7;
+
+    color: #166534;
+}
+
+
+.loss-btn {
+
+    background: #fee2e2;
+
+    color: #991b1b;
+}
+
+
+.result-buttons button:hover {
+
+    filter: brightness(0.95);
+}
+
+
+
+/* ================= STRATEGY HISTORY ================= */
+
+.strategy-history {
+
+    margin-top: 10px;
+}
+
+
+.history-result {
+
+    font-weight: bold;
+}
+
+
+.history-r {
+
+    font-weight: bold;
+
+    font-size: 15px;
+}
+
+
+
+/* ================= COMPARISON ================= */
+
+.comparison-section {
+
+    margin-top: 35px;
+
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 12px;
+
+    padding: 25px;
+}
+
+
+.comparison-header {
+
+    margin-bottom: 20px;
+}
+
+
+.comparison-header h2 {
+
+    margin-bottom: 7px;
+}
+
+
+.comparison-header p {
+
+    color: #6b7280;
+
+    line-height: 1.6;
+}
+
+
+.comparison-table-container {
+
+    overflow-x: auto;
+}
+
+
+.comparison-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 800px;
+}
+
+
+.comparison-table th,
+.comparison-table td {
+
+    padding: 14px;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    text-align: left;
+}
+
+
+.comparison-table th {
+
+    background: #f9fafb;
+
+    font-size: 13px;
+}
+
+
+.comparison-table td {
+
+    font-size: 14px;
+}
+
+
+.positive-r {
+
+    color: #15803d;
+
+    font-weight: bold;
+}
+
+
+.negative-r {
+
+    color: #dc2626;
+
+    font-weight: bold;
+}
+
+
+.neutral-r {
+
+    color: #6b7280;
+
+    font-weight: bold;
+}
+
+
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 900px) {
+
+    .strategy-stats {
+
+        grid-template-columns:
+            repeat(3, 1fr);
     }
-  }
+
 }
 
-function getTodayString() {
-  const today = new Date();
 
-  const year = today.getFullYear();
+@media (max-width: 800px) {
 
-  const month = String(today.getMonth() + 1).padStart(2, "0");
+    .navbar {
 
-  const day = String(today.getDate()).padStart(2, "0");
+        flex-direction: column;
 
-  return `${year}-${month}-${day}`;
-}
+        gap: 10px;
 
-function formatMoney(amount) {
-  amount = Number(amount) || 0;
-
-  if (amount > 0) {
-    return `+$${amount.toFixed(2)}`;
-  }
-
-  if (amount < 0) {
-    return `-$${Math.abs(amount).toFixed(2)}`;
-  }
-
-  return "$0.00";
-}
-
-function getResult(pnl) {
-  if (pnl > 0) {
-    return "Win";
-  }
-
-  if (pnl < 0) {
-    return "Loss";
-  }
-
-  return "Break Even";
-}
-
-function getResultClass(pnl) {
-  if (pnl > 0) {
-    return "profit";
-  }
-
-  if (pnl < 0) {
-    return "loss";
-  }
-
-  return "break-even";
-}
-
-/* =========================================
-   DASHBOARD
-========================================= */
-
-function updateDashboard() {
-  const totalPnL = trades.reduce((sum, trade) => sum + Number(trade.pnl), 0);
-
-  const wins = trades.filter((trade) => Number(trade.pnl) > 0).length;
-
-  const losses = trades.filter((trade) => Number(trade.pnl) < 0).length;
-
-  const total = trades.length;
-
-  const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
-
-  const pnlElement = document.getElementById("totalPnL");
-
-  pnlElement.textContent = formatMoney(totalPnL);
-
-  pnlElement.className = totalPnL > 0 ? "profit" : totalPnL < 0 ? "loss" : "";
-
-  document.getElementById("totalTrades").textContent = total;
-
-  document.getElementById("winRate").textContent = `${winRate}%`;
-
-  document.getElementById("winsLosses").textContent = `${wins} / ${losses}`;
-
-  displayRecentTrades();
-}
-
-function displayRecentTrades() {
-  const container = document.getElementById("recentTrades");
-
-  if (trades.length === 0) {
-    container.innerHTML = `<div class="empty-state">No trades yet.</div>`;
-
-    return;
-  }
-
-  const recent = [...trades]
-    .sort((a, b) => {
-      const dateA = new Date(`${a.date}T${a.time || "00:00:00"}`);
-
-      const dateB = new Date(`${b.date}T${b.time || "00:00:00"}`);
-
-      return dateB - dateA;
-    })
-    .slice(0, 5);
-
-  let html = `
-        <div class="table-container">
-        <table>
-
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Crypto</th>
-                <th>P/L</th>
-                <th>Result</th>
-            </tr>
-        </thead>
-
-        <tbody>
-    `;
-
-  recent.forEach((trade) => {
-    html += `
-            <tr>
-
-                <td>${trade.date}</td>
-
-                <td>${escapeHTML(trade.crypto)}</td>
-
-                <td class="${getResultClass(trade.pnl)}">
-                    ${formatMoney(trade.pnl)}
-                </td>
-
-                <td>
-                    ${getResult(trade.pnl)}
-                </td>
-
-            </tr>
-        `;
-  });
-
-  html += `
-        </tbody>
-        </table>
-        </div>
-    `;
-
-  container.innerHTML = html;
-}
-
-/* =========================================
-   TRADE JOURNAL
-========================================= */
-
-function toggleTradeForm() {
-  document.getElementById("tradeForm").classList.toggle("hidden");
-
-  document.getElementById("tradeDate").value = getTodayString();
-}
-
-function addTrade(event) {
-  event.preventDefault();
-
-  const date = document.getElementById("tradeDate").value;
-
-  const crypto = document.getElementById("tradeCrypto").value.trim();
-
-  const pnl = Number(document.getElementById("tradePnL").value);
-
-  const notes = document.getElementById("tradeNotes").value.trim();
-
-  const now = new Date();
-
-  const trade = {
-    id: Date.now(),
-
-    date: date,
-
-    time:
-      now.getHours().toString().padStart(2, "0") +
-      ":" +
-      now.getMinutes().toString().padStart(2, "0"),
-
-    crypto: crypto,
-
-    pnl: pnl,
-
-    notes: notes,
-
-    strategyId: null,
-  };
-
-  trades.push(trade);
-
-  saveTrades();
-
-  document.getElementById("tradeForm").classList.add("hidden");
-
-  event.target.reset();
-
-  document.getElementById("tradeDate").value = getTodayString();
-
-  updateDashboard();
-
-  displayTrades();
-
-  displayCalendar();
-}
-
-function displayTrades() {
-  const table = document.getElementById("tradeTable");
-
-  const noTrades = document.getElementById("noTrades");
-
-  document.getElementById("journalTradeCount").textContent =
-    `${trades.length} trade${trades.length === 1 ? "" : "s"}`;
-
-  if (trades.length === 0) {
-    table.innerHTML = "";
-
-    noTrades.style.display = "block";
-
-    return;
-  }
-
-  noTrades.style.display = "none";
-
-  const sortedTrades = [...trades].sort((a, b) => b.id - a.id);
-
-  table.innerHTML = sortedTrades
-    .map((trade) => {
-      return `
-            <tr>
-
-                <td>${trade.date}</td>
-
-                <td>${escapeHTML(trade.crypto)}</td>
-
-                <td class="${getResultClass(trade.pnl)}">
-                    ${formatMoney(trade.pnl)}
-                </td>
-
-                <td class="${getResultClass(trade.pnl)}">
-                    ${getResult(trade.pnl)}
-                </td>
-
-                <td>
-                    ${trade.notes ? escapeHTML(trade.notes) : "-"}
-                </td>
-
-                <td>
-                    <button
-                        class="delete-trade"
-                        onclick="deleteTrade(${trade.id})"
-                    >
-                        Delete
-                    </button>
-                </td>
-
-            </tr>
-        `;
-    })
-    .join("");
-}
-
-function deleteTrade(id) {
-  if (!confirm("Delete this trade?")) {
-    return;
-  }
-
-  trades = trades.filter((trade) => trade.id !== id);
-
-  saveTrades();
-
-  updateDashboard();
-
-  displayTrades();
-
-  displayCalendar();
-}
-
-/* =========================================
-   CALENDAR
-========================================= */
-
-function changeMonth(direction) {
-  currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
-
-  displayCalendar();
-}
-
-function displayCalendar() {
-  const year = currentCalendarDate.getFullYear();
-
-  const month = currentCalendarDate.getMonth();
-
-  const monthName = currentCalendarDate.toLocaleString("default", {
-    month: "long",
-    year: "numeric",
-  });
-
-  document.getElementById("calendarMonth").textContent = monthName;
-
-  const firstDay = new Date(year, month, 1);
-
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  /*
-       Convert Sunday = 0
-       to Monday = 0
-    */
-
-  let startingDay = firstDay.getDay() - 1;
-
-  if (startingDay < 0) {
-    startingDay = 6;
-  }
-
-  const calendar = document.getElementById("calendarDays");
-
-  calendar.innerHTML = "";
-
-  // Empty spaces before first day
-
-  for (let i = 0; i < startingDay; i++) {
-    const empty = document.createElement("div");
-
-    empty.className = "calendar-day empty";
-
-    calendar.appendChild(empty);
-  }
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateString = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-
-    const dayTrades = trades.filter((trade) => trade.date === dateString);
-
-    const dailyPnL = dayTrades.reduce(
-      (sum, trade) => sum + Number(trade.pnl),
-      0,
-    );
-
-    const dayElement = document.createElement("div");
-
-    dayElement.className = "calendar-day";
-
-    if (dateString === getTodayString()) {
-      dayElement.classList.add("today");
+        padding: 15px;
     }
 
-    let pnlHTML = "";
 
-    if (dayTrades.length > 0) {
-      pnlHTML = `
-                <div class="day-pnl ${getResultClass(dailyPnL)}">
-                    ${formatMoney(dailyPnL)}
-                </div>
+    .nav-links {
 
-                <div class="day-trades">
-                    ${dayTrades.length}
-                    trade${dayTrades.length === 1 ? "" : "s"}
-                </div>
-            `;
+        flex-wrap: wrap;
+
+        justify-content: center;
     }
 
-    dayElement.innerHTML = `
-            <div class="day-number">${day}</div>
-            ${pnlHTML}
-        `;
 
-    dayElement.onclick = () => showSelectedDay(dateString);
+    .stats-grid,
+    .calendar-summary {
 
-    calendar.appendChild(dayElement);
-  }
-
-  updateMonthlyStats(year, month);
-}
-
-function updateMonthlyStats(year, month) {
-  const monthTrades = trades.filter((trade) => {
-    const date = new Date(trade.date + "T00:00:00");
-
-    return date.getFullYear() === year && date.getMonth() === month;
-  });
-
-  const pnl = monthTrades.reduce((sum, trade) => sum + Number(trade.pnl), 0);
-
-  const wins = monthTrades.filter((trade) => Number(trade.pnl) > 0).length;
-
-  const losses = monthTrades.filter((trade) => Number(trade.pnl) < 0).length;
-
-  const pnlElement = document.getElementById("monthlyPnL");
-
-  pnlElement.textContent = formatMoney(pnl);
-
-  pnlElement.className = pnl > 0 ? "profit" : pnl < 0 ? "loss" : "";
-
-  document.getElementById("monthlyTrades").textContent = monthTrades.length;
-
-  document.getElementById("monthlyWins").textContent = wins;
-
-  document.getElementById("monthlyLosses").textContent = losses;
-}
-
-function showSelectedDay(dateString) {
-  const container = document.getElementById("selectedDay");
-
-  const dayTrades = trades.filter((trade) => trade.date === dateString);
-
-  if (dayTrades.length === 0) {
-    container.innerHTML = `
-            <h2>${dateString}</h2>
-            <p>No trades on this day.</p>
-        `;
-
-    return;
-  }
-
-  const dailyPnL = dayTrades.reduce((sum, trade) => sum + Number(trade.pnl), 0);
-
-  let html = `
-        <h2>${dateString}</h2>
-
-        <p class="${getResultClass(dailyPnL)}">
-            Daily P/L: ${formatMoney(dailyPnL)}
-        </p>
-
-        <br>
-
-        <div class="table-container">
-
-        <table>
-
-        <thead>
-            <tr>
-                <th>Crypto</th>
-                <th>P/L</th>
-                <th>Result</th>
-                <th>Notes</th>
-            </tr>
-        </thead>
-
-        <tbody>
-    `;
-
-  dayTrades.forEach((trade) => {
-    html += `
-            <tr>
-
-                <td>
-                    ${escapeHTML(trade.crypto)}
-                </td>
-
-                <td class="${getResultClass(trade.pnl)}">
-                    ${formatMoney(trade.pnl)}
-                </td>
-
-                <td>
-                    ${getResult(trade.pnl)}
-                </td>
-
-                <td>
-                    ${trade.notes ? escapeHTML(trade.notes) : "-"}
-                </td>
-
-            </tr>
-        `;
-  });
-
-  html += `
-        </tbody>
-        </table>
-
-        </div>
-    `;
-
-  container.innerHTML = html;
-}
-
-/* =========================================
-   STRATEGIES
-========================================= */
-
-function createStrategy(event) {
-  event.preventDefault();
-
-  const name = document.getElementById("strategyName").value.trim();
-
-  if (!name) {
-    return;
-  }
-
-  const strategy = {
-    id: Date.now(),
-
-    name: name,
-
-    createdAt: new Date().toISOString(),
-  };
-
-  strategies.push(strategy);
-
-  saveStrategies();
-
-  selectedStrategyId = strategy.id;
-
-  document.getElementById("strategyName").value = "";
-
-  displayStrategies();
-
-  displaySelectedStrategy();
-}
-
-function displayStrategies() {
-  const container = document.getElementById("strategyList");
-
-  const noStrategies = document.getElementById("noStrategies");
-
-  document.getElementById("strategyCount").textContent =
-    `${strategies.length} strateg${strategies.length === 1 ? "y" : "ies"}`;
-
-  if (strategies.length === 0) {
-    container.innerHTML = "";
-
-    noStrategies.style.display = "block";
-
-    document.getElementById("strategyDetails").classList.add("hidden");
-
-    return;
-  }
-
-  noStrategies.style.display = "none";
-
-  container.innerHTML = strategies
-    .map((strategy) => {
-      const strategyTrades = trades.filter(
-        (trade) => trade.strategyId === strategy.id,
-      );
-
-      const wins = strategyTrades.filter(
-        (trade) => Number(trade.pnl) > 0,
-      ).length;
-
-      const losses = strategyTrades.filter(
-        (trade) => Number(trade.pnl) < 0,
-      ).length;
-
-      const total = strategyTrades.length;
-
-      const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
-
-      return `
-                <div
-                    class="strategy-card
-                    ${selectedStrategyId === strategy.id ? "selected" : ""}"
-                    onclick="selectStrategy(${strategy.id})"
-                >
-
-                    <h3>
-                        ${escapeHTML(strategy.name)}
-                    </h3>
-
-                    <div class="strategy-card-stats">
-
-                        <div>
-                            <span>Trades</span>
-                            <strong>${total}</strong>
-                        </div>
-
-                        <div>
-                            <span>W / L</span>
-                            <strong>${wins} / ${losses}</strong>
-                        </div>
-
-                        <div>
-                            <span>Win Rate</span>
-                            <strong>${winRate}%</strong>
-                        </div>
-
-                    </div>
-
-                </div>
-            `;
-    })
-    .join("");
-}
-
-function selectStrategy(id) {
-  selectedStrategyId = id;
-
-  displayStrategies();
-
-  displaySelectedStrategy();
-}
-
-function displaySelectedStrategy() {
-  const strategy = strategies.find(
-    (strategy) => strategy.id === selectedStrategyId,
-  );
-
-  if (!strategy) {
-    document.getElementById("strategyDetails").classList.add("hidden");
-
-    return;
-  }
-
-  document.getElementById("strategyDetails").classList.remove("hidden");
-
-  document.getElementById("selectedStrategyName").textContent = strategy.name;
-
-  const strategyTrades = trades.filter(
-    (trade) => trade.strategyId === strategy.id,
-  );
-
-  const wins = strategyTrades.filter((trade) => Number(trade.pnl) > 0).length;
-
-  const losses = strategyTrades.filter((trade) => Number(trade.pnl) < 0).length;
-
-  const total = strategyTrades.length;
-
-  const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
-
-  document.getElementById("strategyTotal").textContent = total;
-
-  document.getElementById("strategyWins").textContent = wins;
-
-  document.getElementById("strategyLosses").textContent = losses;
-
-  document.getElementById("strategyWinRate").textContent = `${winRate}%`;
-
-  displayStrategyTrades(strategyTrades);
-}
-
-/* =========================================
-   AUTOMATIC STRATEGY TRADE RECORDER
-========================================= */
-
-function recordStrategyTrade(result) {
-  const strategy = strategies.find(
-    (strategy) => strategy.id === selectedStrategyId,
-  );
-
-  if (!strategy) {
-    return;
-  }
-
-  let pnl = 0;
-
-  /*
-       We don't ask the user for P/L here.
-
-       WIN = 1
-       LOSS = -1
-       BREAK EVEN = 0
-
-       This allows the strategy tester to
-       calculate the statistics automatically.
-    */
-
-  if (result === "win") {
-    pnl = 1;
-  }
-
-  if (result === "loss") {
-    pnl = -1;
-  }
-
-  if (result === "be") {
-    pnl = 0;
-  }
-
-  const now = new Date();
-
-  const trade = {
-    id: Date.now(),
-
-    date: getTodayString(),
-
-    time:
-      now.getHours().toString().padStart(2, "0") +
-      ":" +
-      now.getMinutes().toString().padStart(2, "0"),
-
-    crypto: "Strategy Test",
-
-    pnl: pnl,
-
-    notes: "",
-
-    strategyId: strategy.id,
-
-    strategyResult: result,
-  };
-
-  trades.push(trade);
-
-  saveTrades();
-
-  displayStrategies();
-
-  displaySelectedStrategy();
-
-  updateDashboard();
-
-  displayCalendar();
-}
-
-function displayStrategyTrades(strategyTrades) {
-  const table = document.getElementById("strategyTradeTable");
-
-  const empty = document.getElementById("noStrategyTrades");
-
-  if (strategyTrades.length === 0) {
-    table.innerHTML = "";
-
-    empty.style.display = "block";
-
-    return;
-  }
-
-  empty.style.display = "none";
-
-  const sorted = [...strategyTrades].sort((a, b) => b.id - a.id);
-
-  table.innerHTML = sorted
-    .map((trade, index) => {
-      let resultText = "";
-
-      let resultClass = "";
-
-      if (trade.strategyResult === "win") {
-        resultText = "✓ WIN";
-
-        resultClass = "result-win";
-      } else if (trade.strategyResult === "loss") {
-        resultText = "✕ LOSS";
-
-        resultClass = "result-loss";
-      } else {
-        resultText = "= BREAK EVEN";
-
-        resultClass = "result-be";
-      }
-
-      return `
-                <tr>
-
-                    <td>
-                        #${sorted.length - index}
-                    </td>
-
-                    <td>
-                        ${trade.date}
-                    </td>
-
-                    <td>
-                        ${trade.time}
-                    </td>
-
-                    <td class="${resultClass}">
-                        ${resultText}
-                    </td>
-
-                    <td>
-
-                        <button
-                            class="delete-trade"
-                            onclick="deleteStrategyTrade(${trade.id})"
-                        >
-                            Delete
-                        </button>
-
-                    </td>
-
-                </tr>
-            `;
-    })
-    .join("");
-}
-
-/* =========================================
-   DELETE STRATEGY TRADE
-========================================= */
-
-function deleteStrategyTrade(id) {
-  if (!confirm("Delete this test trade?")) {
-    return;
-  }
-
-  trades = trades.filter((trade) => trade.id !== id);
-
-  saveTrades();
-
-  displayStrategies();
-
-  displaySelectedStrategy();
-
-  updateDashboard();
-
-  displayCalendar();
-}
-
-/* =========================================
-   DELETE STRATEGY
-========================================= */
-
-function deleteSelectedStrategy() {
-  const strategy = strategies.find(
-    (strategy) => strategy.id === selectedStrategyId,
-  );
-
-  if (!strategy) {
-    return;
-  }
-
-  const confirmDelete = confirm(
-    `Delete "${strategy.name}"?\n\nThe strategy will be removed, but its recorded trades will remain in your journal.`,
-  );
-
-  if (!confirmDelete) {
-    return;
-  }
-
-  /*
-       Keep the trades but remove the
-       strategy association.
-    */
-
-  trades = trades.map((trade) => {
-    if (trade.strategyId === strategy.id) {
-      return {
-        ...trade,
-        strategyId: null,
-      };
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 
-    return trade;
-  });
 
-  strategies = strategies.filter(
-    (strategy) => strategy.id !== selectedStrategyId,
-  );
+    .form-grid {
 
-  selectedStrategyId = null;
+        grid-template-columns: 1fr;
+    }
 
-  saveTrades();
 
-  saveStrategies();
+    .full-width {
 
-  displayStrategies();
+        grid-column: auto;
+    }
 
-  updateDashboard();
 
-  displayTrades();
+    .strategy-tabs {
 
-  displayCalendar();
+        grid-template-columns: 1fr;
+    }
+
+
+    .result-form {
+
+        grid-template-columns: 1fr;
+    }
+
 }
 
-/* =========================================
-   ESCAPE HTML
-========================================= */
 
-function escapeHTML(text) {
-  return String(text)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+@media (max-width: 500px) {
+
+    .stats-grid,
+    .calendar-summary,
+    .strategy-stats {
+
+        grid-template-columns: 1fr;
+    }
+
+
+    .calendar-weekdays div {
+
+        font-size: 11px;
+
+        padding: 10px 3px;
+    }
+
+
+    .calendar-day {
+
+        min-height: 65px;
+
+        padding: 6px;
+    }
+
 }
-
-/* =========================================
-   START WEBSITE
-========================================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("tradeDate").value = getTodayString();
-
-  updateDashboard();
-
-  displayTrades();
-
-  displayCalendar();
-
-  displayStrategies();
-});
